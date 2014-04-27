@@ -16,6 +16,10 @@ class EwMenu():
     HCOLOR = (200, 100, 100)
     #Default font
     font = pg.font.Font('font.ttf', 40)
+    
+    #Initialize sound
+    pg.mixer.init()
+    s_selected = pg.mixer.Sound('menu.ogg')
 
     #Variables
     selected = 0
@@ -43,8 +47,10 @@ class EwMenu():
         for e in events:
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_DOWN or e.key == pg.K_j or e.key == pg.K_s:
+                    self.s_selected.play()
                     self.selected += 1
                 if e.key == pg.K_UP or e.key == pg.K_k or e.key == pg.K_w:
+                    self.s_selected.play()
                     self.selected -= 1
                 if e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
                     self.items[self.selected]['Action']()
