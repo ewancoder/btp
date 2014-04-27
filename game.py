@@ -10,6 +10,7 @@
 """
 
 import pygame as pg
+import ewmenu
 
 #========== CONSTANTS ==========
 CAPTION = 'Big Typernatural Project'
@@ -17,11 +18,32 @@ SIZE = (1000, 700)
 
 #========== CLASSES ==========
 class Menu():
+    running = True
     def main(self, screen):
-        print("Here will be menu!")
+        clock = pg.time.Clock()
+
+        menu = ewmenu.EwMenu(
+            ['New game', lambda: setattr(self, 'running', False)],
+            ['Load game', lambda: setattr(self, 'running', False)],
+            ['Settings', lambda: setattr(self, 'running', False)],
+            ['Quit', lambda: setattr(self, 'running', False)]
+        )
+
+        while self.running:
+            events = pg.event.get()
+            clock.tick(30)
+            for event in events:
+                if event.type == pg.QUIT:
+                    exit()
+            menu.update(events)
+            menu.draw(screen)
+
+            #===== FLIPPING DISPLAY AFTER DRAWING =====
+            pg.display.flip()
 
 #========== MAIN PROGRAM ==========
 if __name__ == '__main__':
-    screen = pg.display.set_mode(SIZE)
     pg.display.set_caption(CAPTION)
+    screen = pg.display.set_mode(SIZE)
     Menu().main(screen)
+    pg.quit()
