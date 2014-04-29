@@ -9,32 +9,30 @@
         3. Typo games - the faster you type, the more you gain
 """
 
+import pickle
 import pygame as pg
-from string import ascii_letters as CHARS
+pg.mixer.pre_init(22050, -16, True, 512)
+pg.init()
 
 import ewmenu
 import interface
 
-import pickle
 
 #========== CONSTANTS ==========
 BACKSPACE = '\x08'
 CAPTION = 'Big Typernatural Project'
+from string import ascii_letters as CHARS
 SIZE = (1000, 700)
-
-#========== FUNCTIONS ==========
-def save(name):
-    with open('Saves/' + name, 'wb') as f:
-        pickle.dump(pers, f)
-
-def load(name):
-    with open('Saves/' + name, 'rb') as f:
-        pers = pickle.load(f)
 
 #========== CLASSES ==========
 class Pers():
-    maxhp = 30
-    hp = maxhp
+    def save(self, name):
+        with open('Saves/' + name, 'wb') as f:
+            pickle.dump(self, f)
+
+    def load(self, name):
+        with open('Saves/' + name, 'rb') as f:
+            self = pickle.load(f)
 
 class Game():
     def main(self, screen):
@@ -60,14 +58,22 @@ class Game():
             pg.display.flip()
 
 class Battle():
-    paused = False #If paused, goes black screen and paused :)
-    prompt = ''
+    #===== MAIN BATTLE FUNCTION =====
     def main(self, screen):
-        pg.mixer.stop()
-        background = pg.image.load('background.jpg')
+        #Create new clock
         clock = pg.time.Clock()
+
+        #Stop music if playing
+        if pg.mixer.get_busy():
+            pg.mixer.stop()
+        #Load files
+        background = pg.image.load('background.jpg') #Setup battle background - here will be random select from Images/Battle folder
+
+        #===== MAIN LOOP =====
         while True:
             clock.tick(30)
+
+            #===== EVENTS =====
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     exit()
@@ -75,53 +81,78 @@ class Battle():
                     if event.unicode in CHARS + BACKSPACE and event.unicode != '':
                         if event.unicode == BACKSPACE:
                             self.prompt = self.prompt[:-1]
+                        else:
+                            self.prompt += event.unicode
                     elif event.key == pg.K_ESCAPE:
-                        self.paused = not self.paused
                         print("Here will be pause-message about 'q' = exit to menu")
+                        return #Need to do it only if self.paused is true & q is pressed
                     elif event.key == pg.K_RETURN:
                         print("Here will be word nulling")
-                    if event.key == pg.K_q and self.paused == True:
-                        return
 
+            #===== DRAWING =====
             screen.fill(0)
             screen.blit(background, (0,0))
 
+            #===== SCREEN REFRESH =====
             pg.display.flip()
 
 class Menu():
-    running = True
+    #===== MAIN BATTLE FUNCTION =====
     def main(self, screen):
+        #Create new clock
         clock = pg.time.Clock()
-        background = pg.image.load('background.jpg')
-        pg.mixer.init()
-        main_theme = pg.mixer.Sound('menu.ogg')
-        menu = ewmenu.EwMenu(
-            ['New game', lambda: Game().main(screen)],
-            ['Load game', lambda: Battle().main(screen)],
-            ['Settings', lambda: setattr(self, 'running', False)],
+        #Set loop variable
+        running = True
+
+        #Setup initial menu pack
+        mainMenu = (
+            ['Start / Load Game', lambda: Game().main(screen)],
+            ['Settings', lambda: setattr(self, 'menu', ewmenu.EwMenu(settingsMenu))],
             ['Quit', lambda: setattr(self, 'running', False)]
         )
+        settingsMenu = (
+            ['Start / Load Game', lambda: Game().main(screen)]
+        )
 
+        #Load files
+        background = pg.image.load('Images/background.jpg') #Background image
+        main_theme = pg.mixer.Sound('Music/menu.ogg') #Background music
+        #Construct menu
+        menu = ewmenu.EwMenu(mainMenu)
+        #Background movement variables
         x, dx = 0, 1
 
-        while self.running:
+        #===== MAIN LOOP =====
+        while running:
+            clock.tick(30)
+
+            #===== EVENTS =====
+            for e in pg.event.get():
+                if e.type == pg.QUIT:
+                    exit()
+                elif e.type == pg.KEYDOWN:
+                    if e.key == pg.K_DOWN or e.key == pg.K_j or e.key == pg.K_s:
+                        menu.move(1)
+                    elif e.key == pg.K_UP or e.key == pg.K_k or e.key == pg.K_w:
+                        menu.move(-1)
+                    elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
+                        menu.activate()
+            
+            #===== CALCULATIONS =====
+            #Turn on music if not playing
             if not pg.mixer.get_busy():
-                main_theme.play(-1) #Repeating music
-            screen.fill(0)
-            screen.blit(background, (-x,0))
+                main_theme.play(-1) #Repeating music continuosly
+            #Move background image
             x += dx
             if x > background.get_size()[0] - SIZE[0] or x <= 0:
                 dx *= -1
 
-            events = pg.event.get()
-            clock.tick(30)
-            for event in events:
-                if event.type == pg.QUIT:
-                    exit()
-            menu.update(events)
-            menu.draw(screen)
+            #===== DRAWING =====
+            screen.fill(0)
+            screen.blit(background, (-x,0))
+#            menu.draw(screen) #Refresh menu
 
-            #===== FLIPPING DISPLAY AFTER DRAWING =====
+            #===== SCREEN REFRESH =====
             pg.display.flip()
 
 #========== MAIN PROGRAM ==========

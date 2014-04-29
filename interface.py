@@ -53,6 +53,6 @@ class Message():
     def __init__(self, screen):
         x = 10
         self.y = 10
-        self.font = pg.font.Font('comic.ttf', 30)
+        self.font = pg.font.Font('Fonts/comic.ttf', 30)
         self.rect = pg.Rect((0, 0, screen.get_size()[0]-x*2, screen.get_size()[1] / 3))
         self.x = screen.get_size()[0] / 2 - self.rect.width / 2
