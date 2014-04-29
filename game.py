@@ -13,14 +13,29 @@ import pygame as pg
 from string import ascii_letters as CHARS
 
 import ewmenu
-import message
+import interface
+
+import pickle
 
 #========== CONSTANTS ==========
 BACKSPACE = '\x08'
 CAPTION = 'Big Typernatural Project'
 SIZE = (1000, 700)
 
+#========== FUNCTIONS ==========
+def save(name):
+    with open('Saves/' + name, 'wb') as f:
+        pickle.dump(pers, f)
+
+def load(name):
+    with open('Saves/' + name, 'rb') as f:
+        pers = pickle.load(f)
+
 #========== CLASSES ==========
+class Pers():
+    maxhp = 30
+    hp = maxhp
+
 class Game():
     def main(self, screen):
         pg.mixer.stop()
@@ -28,8 +43,8 @@ class Game():
         
         background = pg.image.load('background.jpg')
         text = "This is some long long text which needs of word wrapping loool :)"
-        font = pg.font.Font(None, 30)
-        rect = pg.Rect((40, 40, 600, 200))
+
+        message = interface.Message(screen)
 
         while True:
             screen.fill(0)
@@ -40,7 +55,7 @@ class Game():
                     exit()
 
             clock.tick(30)
-            message.Message().main(text, font, rect, screen)
+            message.refresh(text, screen)
 
             pg.display.flip()
 
@@ -79,7 +94,7 @@ class Menu():
         clock = pg.time.Clock()
         background = pg.image.load('background.jpg')
         pg.mixer.init()
-        main_theme = pg.mixer.Sound('main.ogg')
+        main_theme = pg.mixer.Sound('menu.ogg')
         menu = ewmenu.EwMenu(
             ['New game', lambda: Game().main(screen)],
             ['Load game', lambda: Battle().main(screen)],

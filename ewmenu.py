@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import pygame as pg
+pg.mixer.pre_init(22050, -16, True, 512)
+pg.init()
 
 class EwMenu():
     """EwanMenu - simple class for easy menu creation"""
@@ -18,8 +20,8 @@ class EwMenu():
     font = pg.font.Font('font.ttf', 40)
     
     #Initialize sound
-    pg.mixer.init()
-    s_selected = pg.mixer.Sound('menu.ogg')
+    #pg.mixer.init()
+    s_selected = pg.mixer.Sound('select.ogg')
 
     #Variables
     selected = 0

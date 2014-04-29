@@ -25,7 +25,9 @@ class Message():
             else:
                 finallines.append(line)
 
-        surface = pg.Surface(rect.size)
+        key_color = (0, 255, 0)
+
+        surface = pg.Surface(rect.size, pg.SRCALPHA, 32)
         surface.fill(bg_color)
 
         newheight = 0
@@ -43,10 +45,14 @@ class Message():
                     surface.blit(temp, (rect.width - temp.get_width(), newheight))
             newheight += font.size(line)[1]
 
-        surface.set_alpha(100)
-
         return surface
 
-    def main(self, text, font, rect, screen):
-        x = 200
-        screen.blit(self.wordwrap(text, font, rect, (0,0,0), (255,0,0)), (x, 10))
+    def refresh(self, text, screen):
+        screen.blit(self.wordwrap(text, self.font, self.rect, (200,200,100), (255,0,0, 80)), (self.x,self.y))
+
+    def __init__(self, screen):
+        x = 10
+        self.y = 10
+        self.font = pg.font.Font('comic.ttf', 30)
+        self.rect = pg.Rect((0, 0, screen.get_size()[0]-x*2, screen.get_size()[1] / 3))
+        self.x = screen.get_size()[0] / 2 - self.rect.width / 2
