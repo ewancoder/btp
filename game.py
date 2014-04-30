@@ -1,156 +1,130 @@
 #!/usr/bin/env python3
-#I am aiming to write this code both in python3 and python2 for learning case (python2 for wide range of people, python3 for future and coolness)
+#I am aiming to write this code both in python3 and python2 for learning sake (python2 for wide people range, python3 for future and coolness)
 """
-    Copyright (c) 2014 EwanCoder <ewancoder@gmail.com>
+    Copyright (c) 2014 EwanCoder <ewancoder@gmail.com> GPL
 
     This game compiles these independent concepts:
         1. Supernatural world, based on CW Supernatural Show
-        2. Text-based rpg quest games
-        3. Typo games - the faster you type, the more you gain
+        2. Text-based rpg quest game
+        3. Type game - the faster you type, the more you gain
 """
-
-import pickle
-import pygame as pg
-pg.mixer.pre_init(22050, -16, True, 512)
-pg.init()
 
 import ewmenu
 import interface
 
+import os #For checking file existence
+
+import pygame as pg
+pg.mixer.pre_init(22050, -16, True, 512)
+pg.init()
 
 #========== CONSTANTS ==========
-BACKSPACE = '\x08'
 CAPTION = 'Big Typernatural Project'
-from string import ascii_letters as CHARS
 SIZE = (1000, 700)
 
 #========== CLASSES ==========
-class Pers():
-    def save(self, name):
-        with open('Saves/' + name, 'wb') as f:
-            pickle.dump(self, f)
+class Screens():
 
-    def load(self, name):
-        with open('Saves/' + name, 'rb') as f:
-            self = pickle.load(f)
+    #===== VARIABLES =====
+    x, dx = 0, 1    #Background movement
+
+    def loginScreen(self, surface):
+        message = interface.Message(surface)
+        inputbox = interface.Input(surface)
+        text = 'Tell me your name, Stranger!\nIf you are new here, I will come with you through the first steps you take in this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
+        bg = pg.image.load('Images/login.jpg')
+        clock = pg.time.Clock()
+        step = 0 #STEP on which current input/interface handling is dangling :D
+
+        while True:
+            clock.tick(30)
+
+
+            events = pg.event.get()
+            for event in events:
+                if event.type == pg.QUIT:
+                    exit()
+
+            name = inputbox.events(events)
+            if name != None:
+                if step == 0:
+                    if os.path.isfile('Saves/' + name):
+                        text = 'I see, you\'re back, ' + name + '. Well, then you will continue your journew from where you have started... I must leave you now. Good luck!'
+                    else:
+                        text = 'Greetings, sir ' + name + '. I will lead you through some survival basis in this cruel world, then you must do it by yourself\nPress [RETURN]'
+                    step += 1
+                else:
+                    Game().start(name)
+                    return
+
+            surface.fill(0)
+            surface.blit(bg, (-self.x,0))
+            self.x += self.dx
+            #Move background image
+            if self.x > (bg.get_size()[0] - SIZE[0]) / 2:
+                self.dx = 0
+
+            message.draw(text, surface)
+            inputbox.draw(surface)
+
+            pg.display.flip()
 
 class Game():
-    def main(self, screen):
-        pg.mixer.stop()
+
+    def start(self, name):
         clock = pg.time.Clock()
-        
-        background = pg.image.load('background.jpg')
-        text = "This is some long long text which needs of word wrapping loool :)"
-
-        message = interface.Message(screen)
-
-        while True:
-            screen.fill(0)
-            screen.blit(background, (0,0))
-
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    exit()
-
-            clock.tick(30)
-            message.refresh(text, screen)
-
-            pg.display.flip()
-
-class Battle():
-    #===== MAIN BATTLE FUNCTION =====
-    def main(self, screen):
-        #Create new clock
-        clock = pg.time.Clock()
-
-        #Stop music if playing
-        if pg.mixer.get_busy():
-            pg.mixer.stop()
-        #Load files
-        background = pg.image.load('background.jpg') #Setup battle background - here will be random select from Images/Battle folder
-
-        #===== MAIN LOOP =====
-        while True:
-            clock.tick(30)
-
-            #===== EVENTS =====
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    exit()
-                elif event.type == pg.KEYDOWN:
-                    if event.unicode in CHARS + BACKSPACE and event.unicode != '':
-                        if event.unicode == BACKSPACE:
-                            self.prompt = self.prompt[:-1]
-                        else:
-                            self.prompt += event.unicode
-                    elif event.key == pg.K_ESCAPE:
-                        print("Here will be pause-message about 'q' = exit to menu")
-                        return #Need to do it only if self.paused is true & q is pressed
-                    elif event.key == pg.K_RETURN:
-                        print("Here will be word nulling")
-
-            #===== DRAWING =====
-            screen.fill(0)
-            screen.blit(background, (0,0))
-
-            #===== SCREEN REFRESH =====
-            pg.display.flip()
 
 class Menu():
-    #===== MAIN BATTLE FUNCTION =====
-    def main(self, screen):
-        #Create new clock
-        clock = pg.time.Clock()
-        #Set loop variable
-        running = True
 
-        #Setup initial menu pack
+    #===== VARIABLES =====
+    x, dx = 0, 1    #Background movement
+
+    def main(self, surface, items = 0):
+        clock = pg.time.Clock()
+
+        #===== INITIAL SETUP =====
         mainMenu = (
-            ['Start / Load Game', lambda: Game().main(screen)],
-            ['Settings', lambda: setattr(self, 'menu', ewmenu.EwMenu(settingsMenu))],
-            ['Quit', lambda: setattr(self, 'running', False)]
+            ['Start / Load Game', lambda: Screens().loginScreen(surface)],
+            ['Settings', lambda: self.main(surface, settingsMenu)],
+            ['Quit', lambda: exit()]
         )
         settingsMenu = (
-            ['Start / Load Game', lambda: Game().main(screen)]
+            ['There\'re no settings here yet...', lambda: print('There will be settings')],
+            ['Back', lambda: self.main(surface)]
         )
-
+        if items == 0:
+            items = mainMenu
         #Load files
-        background = pg.image.load('Images/background.jpg') #Background image
-        main_theme = pg.mixer.Sound('Music/menu.ogg') #Background music
+        background = pg.image.load('Images/background.jpg')
+        main_theme = pg.mixer.Sound('Music/menu.ogg')
         #Construct menu
-        menu = ewmenu.EwMenu(mainMenu)
-        #Background movement variables
-        x, dx = 0, 1
+        menu = ewmenu.EwMenu(items)
 
         #===== MAIN LOOP =====
-        while running:
+        while True:
             clock.tick(30)
 
             #===== EVENTS =====
-            for e in pg.event.get():
+            events = pg.event.get()
+            for e in events:
                 if e.type == pg.QUIT:
                     exit()
-                elif e.type == pg.KEYDOWN:
-                    if e.key == pg.K_DOWN or e.key == pg.K_j or e.key == pg.K_s:
-                        menu.move(1)
-                    elif e.key == pg.K_UP or e.key == pg.K_k or e.key == pg.K_w:
-                        menu.move(-1)
-                    elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
-                        menu.activate()
-            
+            #Processing menu events
+            menu.events(events)
+
             #===== CALCULATIONS =====
             #Turn on music if not playing
             if not pg.mixer.get_busy():
-                main_theme.play(-1) #Repeating music continuosly
+                main_theme.play(-1) #Repeating music continuously
             #Move background image
-            x += dx
-            if x > background.get_size()[0] - SIZE[0] or x <= 0:
-                dx *= -1
+            self.x += self.dx
+            if self.x > background.get_size()[0] - SIZE[0] or self.x <= 0:
+                self.dx *= -1
 
             #===== DRAWING =====
-            screen.fill(0)
-            screen.blit(background, (-x,0))
-#            menu.draw(screen) #Refresh menu
+            surface.fill(0)
+            surface.blit(background, (-self.x, 0))
+            menu.draw(surface)
 
             #===== SCREEN REFRESH =====
             pg.display.flip()
