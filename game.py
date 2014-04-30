@@ -9,6 +9,8 @@
         3. Type game - the faster you type, the more you gain
 """
 
+import data as d
+
 import ewmenu
 import interface
 
@@ -25,16 +27,50 @@ SIZE = (1000, 700)
 #========== CLASSES ==========
 class Screens():
 
-    #===== VARIABLES =====
-    x, dx = 0, 1    #Background movement
+    def introduction(self, name, surface):
+        x, dx = 0, 1
+        message = interface.Message(surface)
+        clock = pg.time.Clock()
+        allstep = len(d.introtext) - 1 #Number of step images
+        step = 0 #Number of current intro slide
+        bg = pg.image.load('Images/Intro/intro0.jpg')
+        text = d.introtext[0]
 
-    def loginScreen(self, surface):
+        while True:
+            clock.tick(30)
+            events = pg.event.get()
+            for e in events:
+                if e.type == pg.QUIT:
+                    exit()
+                if e.type == pg.KEYDOWN and e.key == pg.K_RETURN:
+                    if step < allstep:
+                        step += 1
+                        bg = pg.image.load('Images/Intro/intro' + str(step) + '.jpg')
+                        text = d.introtext[step]
+                        x, dx = 0, 1
+                    else:
+                        return()
+
+            surface.fill(0)
+            surface.blit(bg, (-x,0))
+            x += dx
+            #Move background image
+            if x > (bg.get_size()[0] - SIZE[0]) / 2:
+                dx = 0
+
+            message.draw(text, surface)
+
+            pg.display.flip()
+
+    def login(self, surface):
+        x, dx = 0, 1
         message = interface.Message(surface)
         inputbox = interface.Input(surface)
-        text = 'Tell me your name, Stranger!\nIf you are new here, I will come with you through the first steps you take in this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
+        text = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
         bg = pg.image.load('Images/login.jpg')
         clock = pg.time.Clock()
-        step = 0 #STEP on which current input/interface handling is dangling :D
+        intro = False
+        step = 0 #If step = 1 - Return is pressed
 
         while True:
             clock.tick(30)
@@ -44,28 +80,32 @@ class Screens():
             for event in events:
                 if event.type == pg.QUIT:
                     exit()
-
-            name = inputbox.events(events)
-            if name != None:
-                if step == 0:
-                    if os.path.isfile('Saves/' + name):
-                        text = 'I see, you\'re back, ' + name + '. Well, then you will continue your journew from where you have started... I must leave you now. Good luck!'
-                    else:
-                        text = 'Greetings, sir ' + name + '. I will lead you through some survival basis in this cruel world, then you must do it by yourself\nPress [RETURN]'
-                    step += 1
-                else:
+                if event.type == pg.KEYDOWN and event.key == pg.K_RETURN and step == 1:
+                    if intro:
+                        Screens().introduction(name, surface)
                     Game().start(name)
                     return
 
+            ievent = inputbox.events(events) #inputEvent
+            if ievent != None:
+                name = ievent
+                step = 1
+                if os.path.isfile('Saves/' + name):
+                    text = 'I see, you\'re back, ' + name + '. Well, then you will continue your journew from where you have started... I must leave you now. Good luck!\nPress [RETURN]'
+                else:
+                    text = 'Greetings, sir ' + name + '. I will tell you a story of this world, then you can try to survive by yourself\nPress [RETURN]'
+                    intro = True
+
             surface.fill(0)
-            surface.blit(bg, (-self.x,0))
-            self.x += self.dx
+            surface.blit(bg, (-x,0))
+            x += dx
             #Move background image
-            if self.x > (bg.get_size()[0] - SIZE[0]) / 2:
-                self.dx = 0
+            if x > (bg.get_size()[0] - SIZE[0]) / 2:
+                dx = 0
 
             message.draw(text, surface)
-            inputbox.draw(surface)
+            if step == 0:
+                inputbox.draw(surface)
 
             pg.display.flip()
 
@@ -84,7 +124,7 @@ class Menu():
 
         #===== INITIAL SETUP =====
         mainMenu = (
-            ['Start / Load Game', lambda: Screens().loginScreen(surface)],
+            ['Start / Load Game', lambda: Screens().login(surface)],
             ['Settings', lambda: self.main(surface, settingsMenu)],
             ['Quit', lambda: exit()]
         )
