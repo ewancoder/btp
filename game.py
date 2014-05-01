@@ -209,8 +209,13 @@ class Screens():
 
             pg.display.flip()
 
+    def battle(self, surface, mobs, pers):
+        pers.hp += 40
+        return pers
+
 class Pers():
     place = 'Great Fault'
+    hp = 20
 
 class Game():
 
@@ -227,9 +232,9 @@ class Game():
         while running:
             #ALL LOGICS CALCULATION
             #IF LOGICS PROVE TO BE AT MAP PLACE - then
-            (pers.place, Mobs) = Screens().map(surface, pers.place)
-            if random.randrange(0, 100) < Mobs['Chance']:
-                print(Mobs['Chance'])
+            (pers.place, mobs) = Screens().map(surface, pers.place)
+            if random.randrange(0, 100) < mobs['Chance']:
+                pers = Screens().battle(surface, mobs, self.pers)
             #ELSE IF LOGICS PROVE TO BE A BATTLE, then Screens().battle
             #Else etc.
 
