@@ -16,6 +16,7 @@ import interface
 
 import os #For checking file existence
 import pickle #For save/load gamedata
+import random
 
 import pygame as pg
 pg.mixer.pre_init(22050, -16, True, 512)
@@ -92,7 +93,7 @@ class Screens():
         clock = pg.time.Clock()
         bg = pg.image.load('Images/Places/' + place + '.jpg')
         imusic = pg.mixer.Sound('Music/intro.ogg')
-        PLACE = next(t for t in d.place if t['Id'] == place)
+        PLACE = next(item for item in d.place if item['Id'] == place)
         text = PLACE['Text']
         if pg.mixer.get_busy():
             pg.mixer.stop()
@@ -108,7 +109,7 @@ class Screens():
             if ievent != None:
                 e = ievent
                 if e in PLACE['Actions']:
-                    return PLACE['Goto'][PLACE['Actions'].index(e)]
+                    return (PLACE['Goto'][PLACE['Actions'].index(e)], PLACE['Mobs'])
 
             surface.fill(0)
             surface.blit(bg, (-x,0))
@@ -226,7 +227,9 @@ class Game():
         while running:
             #ALL LOGICS CALCULATION
             #IF LOGICS PROVE TO BE AT MAP PLACE - then
-            pers.place = Screens().map(surface, pers.place)
+            (pers.place, Mobs) = Screens().map(surface, pers.place)
+            if random.randrange(0, 100) < Mobs['Chance']:
+                print(Mobs['Chance'])
             #ELSE IF LOGICS PROVE TO BE A BATTLE, then Screens().battle
             #Else etc.
 

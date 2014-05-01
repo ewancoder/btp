@@ -1,5 +1,10 @@
+valeMobs = {
+    'Chance': 50
+}
+
 place = []
-place.append({'Id': 'Great Fault', 'Text': 'There are smoke everywhere and big fire dance around the Great Fault\nYou can go [left] and [right]', 'Actions': ['left', 'right'], 'Goto': ['Big Vale', 'Small Vale']})
+place.append({'Id': 'Great Fault', 'Text': 'There are smoke everywhere and big fire dance around the Great Fault\nYou can go [left] and [right]', 'Actions': ['left', 'right'], 'Goto': ['Big Vale', 'Small Vale'], 'Mobs': valeMobs})
+place.append({'Id': 'Big Vale', 'Text': 'There are smoke everywhere and big fire dance around the Great Fault\nYou can go [left] and [right]', 'Actions': ['left', 'right'], 'Goto': ['Big Vale', 'Small Vale'], 'Mobs': valeMobs})
 
 introtext = [
     'Long before the Age of Heroes, when there was nothing but the essence of the pure Light, 6 worlds have been created by the hand of the Goddess Liana.',
