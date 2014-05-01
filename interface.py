@@ -9,18 +9,21 @@ class Input():
     def __init__(self, surface):
         self.FONT = pg.font.Font('Fonts/rpg.ttf', 50)
         self.BG = pg.image.load('Images/parchment.png')
-        self.WIDTH = self.BG.get_width()
-        self.HEIGHT = self.BG.get_height()
+        self.setsize(surface)
         self.X = (surface.get_size()[0] - self.WIDTH) / 2
         self.Y = surface.get_size()[1] - self.HEIGHT
         #Surface which contains background + text
-        self.surface = pg.Surface((self.WIDTH, self.HEIGHT))
+        self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
         self.surface.set_colorkey(0)
 
+    #KOSTYL
+    def setsize(self, surface):
+        self.WIDTH = surface.get_size()[0] / 1.2
+        self.HEIGHT = surface.get_size()[1] / 8
+
     def draw(self, surface):
-        self.surface.fill(0)
-        self.surface.blit(self.BG, (0,0))
-        text = self.FONT.render(self.prompt, True, (0,0,0))
+        self.surface.fill((0,0,0, 120))
+        text = self.FONT.render(self.prompt, True, (180,150,0))
         self.surface.blit(text, ((self.WIDTH - text.get_width()) / 2, (self.HEIGHT - text.get_height()) / 2))
         surface.blit(self.surface, (self.X, self.Y))
 
@@ -35,6 +38,18 @@ class Input():
                     prompt = self.prompt
                     self.prompt = ''
                     return prompt
+
+class Parchment(Input):
+    def setsize(self, surface):
+        self.WIDTH = self.BG.get_width()
+        self.HEIGHT = self.BG.get_height()
+    def draw(self, surface):
+        self.surface.fill(0)
+        self.surface.blit(self.BG, (0,0))
+        text = self.FONT.render(self.prompt, True, (0,0,0))
+        self.surface.blit(text, ((self.WIDTH - text.get_width()) / 2, (self.HEIGHT - text.get_height()) / 2))
+        surface.blit(self.surface, (self.X, self.Y))
+
 
 class Message():
 

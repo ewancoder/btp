@@ -36,21 +36,24 @@ class Screens():
         #Load files
         BG = pg.image.load('Images/background.jpg')
         MENU_MUSIC = pg.mixer.Sound('Music/menu.ogg')
-        #Main menu
         MAIN_MENU = (
-            ['Start / Load Game', lambda: self.login(surface)],
-            ['Settings', lambda: setattr(menu, 'goto', 2)],
+            ['Start / Load Game', lambda: Screens().login(surface)],
+            ['Settings', lambda: setattr(self, 'now', 1)],
             ['Quit', lambda: exit()]
         )
         SETTINGS_MENU = (
             ['This is settings example', lambda: print('There will be settings.')],
             ['Back', lambda: setattr(menu, 'goto', 1)]
         )
+        MENU = (
+            MAIN_MENU,
+            SETTINGS_MENU
+        )
         
         #===== VARIABLES =====
         x, dx = 0, 1    #Background movement
         #Construct menu
-        menu = ewmenu.EwMenu(MAIN_MENU) #It's in 'variables' because I'm aiming to make changing of this variable, so that menu changes too
+        menu = ewmenu.EwMenu(MENU)
 
         #===== MAIN LOOP =====
         while True:
@@ -70,13 +73,8 @@ class Screens():
                 MENU_MUSIC.play(-1)
             #Move background image
             x += dx
-            if x > BG.get_size()[0] - SIZE[0] or x <= 0:
+            if x > BG.get_size()[0] - surface.get_size()[0] or x <= 0:
                 dx *= -1
-            #Menu parsing (goto another menu if menu.goto has changed)
-            if menu.goto == 1:
-                menu = ewmenu.EwMenu(MAIN_MENU)
-            elif menu.goto == 2:
-                menu = ewmenu.EwMenu(SETTINGS_MENU)
 
             #===== DRAWING =====
             surface.fill(0)
@@ -115,7 +113,7 @@ class Screens():
             surface.blit(bg, (-x,0))
             x += dx
             #Move background image
-            if x > (bg.get_size()[0] - SIZE[0]) / 2:
+            if x > (bg.get_size()[0] - surface.get_size()[0]) / 2:
                 dx = 0
 
             message.draw(text, surface)
@@ -155,7 +153,7 @@ class Screens():
             surface.blit(bg, (-x,0))
             x += dx
             #Move background image
-            if x > (bg.get_size()[0] - SIZE[0]) / 2:
+            if x > (bg.get_size()[0] - surface.get_size()[0]) / 2:
                 dx = 0
 
             message.draw(text, surface)
@@ -165,7 +163,7 @@ class Screens():
     def login(self, surface):
         x, dx = 0, 1
         message = interface.Message(surface)
-        inputBox = interface.Input(surface)
+        parchment = interface.Parchment(surface)
         text = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
         bg = pg.image.load('Images/login.jpg')
         clock = pg.time.Clock()
@@ -186,7 +184,7 @@ class Screens():
                     Game().start(surface, name)
                     return
 
-            ievent = inputBox.events(events) #inputEvent
+            ievent = parchment.events(events) #inputEvent
             if ievent != None:
                 name = ievent
                 step = 1
@@ -200,22 +198,31 @@ class Screens():
             surface.blit(bg, (-x,0))
             x += dx
             #Move background image
-            if x > (bg.get_size()[0] - SIZE[0]) / 2:
+            if x > (bg.get_size()[0] - surface.get_size()[0]) / 2:
                 dx = 0
 
             message.draw(text, surface)
             if step == 0:
-                inputBox.draw(surface)
+                parchment.draw(surface)
 
             pg.display.flip()
 
-    def battle(self, surface, mobs, pers):
-        pers.hp += 40
+    def battle(self, surface, mobs, pers, mob):
+        battleInput = interface.Input(surface)
+        clock = pg.time.Clock()
+        while True:
+            clock.tick(30)
+            battleInput.draw(surface)
+
         return pers
+
+class Mob():
+    name = 'Skeleton'
 
 class Pers():
     place = 'Great Fault'
-    hp = 20
+    maxhp = 20
+    hp = maxhp
 
 class Game():
 
@@ -223,32 +230,32 @@ class Game():
     pers = Pers()
 
     def start(self, surface, name):
-        pers = self.pers #Just for clearance
         if os.path.isfile('Saves/' + name):
             self.load(name)
         else:
             self.save(name)
         running = True #I need this because there'll be no other way out
         while running:
-            #ALL LOGICS CALCULATION
-            #IF LOGICS PROVE TO BE AT MAP PLACE - then
-            (pers.place, mobs) = Screens().map(surface, pers.place)
+            (self.pers.place, mobs) = Screens().map(surface, self.pers.place)
             if random.randrange(0, 100) < mobs['Chance']:
-                pers = Screens().battle(surface, mobs, self.pers)
-            #ELSE IF LOGICS PROVE TO BE A BATTLE, then Screens().battle
-            #Else etc.
+                self.pers = Screens().battle(surface, mobs, self.pers, Mob())
+            #IF anything else for screens -> Screens().anythingelse()
+            #check_upon_death + check_upon_new_level + everything else (Pers.update?)
+            self.save(name)
 
     def save(self, name):
         with open('Saves/' + name, 'wb') as f:
             pickle.dump(self.pers, f)
+            print('Game saved as ' + name)
 
     def load(self, name):
         with open('Saves/' + name, 'rb') as f:
             self.pers = pickle.load(f)
+            print('Game loaded as ' + name)
 
 #========== MAIN PROGRAM ==========
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)
     screen = pg.display.set_mode(SIZE)
-    Screens().menu(screen)
+    mainMenu = Screens().menu(screen)
     pg.quit()

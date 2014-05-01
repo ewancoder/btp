@@ -10,13 +10,17 @@ class EwMenu():
     
     #===== VARIABLES =====
     selected = 0    #Index of selected menu item
-    goto = 0   #Index of menu to go to
+    now = 0         #Index of menu which is showing NOW
 
     def __init__(self, items):
         """Need __init__ for passing 'items' argument and forming dictionary"""
-        self.items = [{'Label': i[0], 'Action': i[1]} for i in items]
+        self.ITEMS = items
+        self.update()
         self.FONT = pg.font.Font('Fonts/rpg.ttf', 40)
         self.SOUND = pg.mixer.Sound('Sounds/select.ogg')
+
+    def update(self):
+        self.items = [{'Label': i[0], 'Action': i[1]} for i in self.ITEMS[self.now]]
 
     def draw(self, surface):
         offset = 0 #Incremental variable for making y-difference
@@ -41,3 +45,7 @@ class EwMenu():
                 elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
                     self.SOUND.play()
                     self.items[self.selected]['Action']()
+        if self.now != 0:
+            update(self.ITEMS)
+            print(self.now)
+            self.now = 0
