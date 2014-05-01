@@ -1,3 +1,6 @@
+place = []
+place.append({'Id': 'Great Fault', 'Text': 'There are smoke everywhere and big fire dance around the Great Fault\nYou can go [left] and [right]', 'Actions': ['left', 'right'], 'Goto': ['Big Vale', 'Small Vale']})
+
 introtext = [
     'Long before the Age of Heroes, when there was nothing but the essence of the pure Light, 6 worlds have been created by the hand of the Goddess Liana.',
     'She divided them one from another, so one cannot reach another, not from mortal world.',

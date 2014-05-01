@@ -3,18 +3,19 @@
 """
     Copyright (c) 2014 EwanCoder <ewancoder@gmail.com> GPL
 
-    This game compiles these independent concepts:
+    This game blends these independent concepts:
         1. Supernatural world, based on CW Supernatural Show
         2. Text-based rpg quest game
         3. Type game - the faster you type, the more you gain
 """
 
-import data as d
+import data as d #All text data + map dictionaries and etc.
 
 import ewmenu
 import interface
 
 import os #For checking file existence
+import pickle #For save/load gamedata
 
 import pygame as pg
 pg.mixer.pre_init(22050, -16, True, 512)
@@ -27,14 +28,75 @@ SIZE = (1000, 700)
 #========== CLASSES ==========
 class Screens():
 
-    def introduction(self, name, surface):
+    def menu(self, surface):
+        clock = pg.time.Clock()
+
+        #===== CONSTANTS =====
+        #Load files
+        BG = pg.image.load('Images/background.jpg')
+        MENU_MUSIC = pg.mixer.Sound('Music/menu.ogg')
+        #Main menu
+        MAIN_MENU = (
+            ['Start / Load Game', lambda: self.login(surface)],
+            ['Settings', lambda: setattr(menu, 'goto', 2)],
+            ['Quit', lambda: exit()]
+        )
+        SETTINGS_MENU = (
+            ['This is settings example', lambda: print('There will be settings.')],
+            ['Back', lambda: setattr(menu, 'goto', 1)]
+        )
+        
+        #===== VARIABLES =====
+        x, dx = 0, 1    #Background movement
+        #Construct menu
+        menu = ewmenu.EwMenu(MAIN_MENU) #It's in 'variables' because I'm aiming to make changing of this variable, so that menu changes too
+
+        #===== MAIN LOOP =====
+        while True:
+            clock.tick(30)
+
+            #===== EVENTS =====
+            events = pg.event.get()
+            for e in events:
+                if e.type == pg.QUIT:
+                    return
+            #Processing menu events
+            menu.events(events)
+
+            #===== CALCULATIONS =====
+            #Turn on music if not playing
+            if not pg.mixer.get_busy():
+                MENU_MUSIC.play(-1)
+            #Move background image
+            x += dx
+            if x > BG.get_size()[0] - SIZE[0] or x <= 0:
+                dx *= -1
+            #Menu parsing (goto another menu if menu.goto has changed)
+            if menu.goto == 1:
+                menu = ewmenu.EwMenu(MAIN_MENU)
+            elif menu.goto == 2:
+                menu = ewmenu.EwMenu(SETTINGS_MENU)
+
+            #===== DRAWING =====
+            surface.fill(0)
+            surface.blit(BG, (-x, 0))
+            menu.draw(surface)
+
+            #===== SCREEN REFRESH =====
+            pg.display.flip()
+
+    def map(self, surface, place):
         x, dx = 0, 1
         message = interface.Message(surface)
+        inputBox = interface.Input(surface)
         clock = pg.time.Clock()
-        allstep = len(d.introtext) - 1 #Number of step images
-        step = 0 #Number of current intro slide
-        bg = pg.image.load('Images/Intro/intro0.jpg')
-        text = d.introtext[0]
+        bg = pg.image.load('Images/Places/' + place + '.jpg')
+        imusic = pg.mixer.Sound('Music/intro.ogg')
+        PLACE = next(t for t in d.place if t['Id'] == place)
+        text = PLACE['Text']
+        if pg.mixer.get_busy():
+            pg.mixer.stop()
+        imusic.play()
 
         while True:
             clock.tick(30)
@@ -42,6 +104,43 @@ class Screens():
             for e in events:
                 if e.type == pg.QUIT:
                     exit()
+            ievent = inputBox.events(events)
+            if ievent != None:
+                e = ievent
+                if e in PLACE['Actions']:
+                    return PLACE['Goto'][PLACE['Actions'].index(e)]
+
+            surface.fill(0)
+            surface.blit(bg, (-x,0))
+            x += dx
+            #Move background image
+            if x > (bg.get_size()[0] - SIZE[0]) / 2:
+                dx = 0
+
+            message.draw(text, surface)
+            inputBox.draw(surface)
+
+            pg.display.flip()
+
+    def introduction(self, surface, name):
+        x, dx = 0, 1
+        message = interface.Message(surface)
+        clock = pg.time.Clock()
+        allstep = len(d.introtext) - 1 #Number of step images
+        step = 0 #Number of current intro slide
+        bg = pg.image.load('Images/Intro/intro0.jpg')
+        imusic = pg.mixer.Sound('Music/intro.ogg')
+        text = d.introtext[0]
+        if pg.mixer.get_busy():
+            pg.mixer.stop()
+        imusic.play()
+
+        while True:
+            clock.tick(30)
+            events = pg.event.get()
+            for e in events:
+                if e.type == pg.QUIT:
+                    return
                 if e.type == pg.KEYDOWN and e.key == pg.K_RETURN:
                     if step < allstep:
                         step += 1
@@ -65,7 +164,7 @@ class Screens():
     def login(self, surface):
         x, dx = 0, 1
         message = interface.Message(surface)
-        inputbox = interface.Input(surface)
+        inputBox = interface.Input(surface)
         text = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
         bg = pg.image.load('Images/login.jpg')
         clock = pg.time.Clock()
@@ -79,14 +178,14 @@ class Screens():
             events = pg.event.get()
             for event in events:
                 if event.type == pg.QUIT:
-                    exit()
+                    return
                 if event.type == pg.KEYDOWN and event.key == pg.K_RETURN and step == 1:
                     if intro:
-                        Screens().introduction(name, surface)
-                    Game().start(name)
+                        Screens().introduction(surface, name)
+                    Game().start(surface, name)
                     return
 
-            ievent = inputbox.events(events) #inputEvent
+            ievent = inputBox.events(events) #inputEvent
             if ievent != None:
                 name = ievent
                 step = 1
@@ -105,73 +204,43 @@ class Screens():
 
             message.draw(text, surface)
             if step == 0:
-                inputbox.draw(surface)
+                inputBox.draw(surface)
 
             pg.display.flip()
+
+class Pers():
+    place = 'Great Fault'
 
 class Game():
 
-    def start(self, name):
-        clock = pg.time.Clock()
+    #Initialize new pers
+    pers = Pers()
 
-class Menu():
+    def start(self, surface, name):
+        pers = self.pers #Just for clearance
+        if os.path.isfile('Saves/' + name):
+            self.load(name)
+        else:
+            self.save(name)
+        running = True #I need this because there'll be no other way out
+        while running:
+            #ALL LOGICS CALCULATION
+            #IF LOGICS PROVE TO BE AT MAP PLACE - then
+            pers.place = Screens().map(surface, pers.place)
+            #ELSE IF LOGICS PROVE TO BE A BATTLE, then Screens().battle
+            #Else etc.
 
-    #===== VARIABLES =====
-    x, dx = 0, 1    #Background movement
+    def save(self, name):
+        with open('Saves/' + name, 'wb') as f:
+            pickle.dump(self.pers, f)
 
-    def main(self, surface, items = 0):
-        clock = pg.time.Clock()
-
-        #===== INITIAL SETUP =====
-        mainMenu = (
-            ['Start / Load Game', lambda: Screens().login(surface)],
-            ['Settings', lambda: self.main(surface, settingsMenu)],
-            ['Quit', lambda: exit()]
-        )
-        settingsMenu = (
-            ['There\'re no settings here yet...', lambda: print('There will be settings')],
-            ['Back', lambda: self.main(surface)]
-        )
-        if items == 0:
-            items = mainMenu
-        #Load files
-        background = pg.image.load('Images/background.jpg')
-        main_theme = pg.mixer.Sound('Music/menu.ogg')
-        #Construct menu
-        menu = ewmenu.EwMenu(items)
-
-        #===== MAIN LOOP =====
-        while True:
-            clock.tick(30)
-
-            #===== EVENTS =====
-            events = pg.event.get()
-            for e in events:
-                if e.type == pg.QUIT:
-                    exit()
-            #Processing menu events
-            menu.events(events)
-
-            #===== CALCULATIONS =====
-            #Turn on music if not playing
-            if not pg.mixer.get_busy():
-                main_theme.play(-1) #Repeating music continuously
-            #Move background image
-            self.x += self.dx
-            if self.x > background.get_size()[0] - SIZE[0] or self.x <= 0:
-                self.dx *= -1
-
-            #===== DRAWING =====
-            surface.fill(0)
-            surface.blit(background, (-self.x, 0))
-            menu.draw(surface)
-
-            #===== SCREEN REFRESH =====
-            pg.display.flip()
+    def load(self, name):
+        with open('Saves/' + name, 'rb') as f:
+            self.pers = pickle.load(f)
 
 #========== MAIN PROGRAM ==========
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)
     screen = pg.display.set_mode(SIZE)
-    Menu().main(screen)
+    Screens().menu(screen)
     pg.quit()

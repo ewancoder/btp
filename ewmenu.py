@@ -10,6 +10,7 @@ class EwMenu():
     
     #===== VARIABLES =====
     selected = 0    #Index of selected menu item
+    goto = 0   #Index of menu to go to
 
     def __init__(self, items):
         """Need __init__ for passing 'items' argument and forming dictionary"""
