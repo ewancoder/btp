@@ -144,6 +144,9 @@ class Screens():
                     if step < allstep:
                         step += 1
                         bg = pg.image.load('Images/Intro/intro' + str(step) + '.jpg')
+                        if not pg.mixer.get_busy():
+                            imusic = pg.mixer.Sound('Music/intro2.ogg')
+                            imusic.play()
                         text = d.introtext[step]
                         x, dx = 0, 1
                     else:
@@ -153,7 +156,7 @@ class Screens():
             surface.blit(bg, (-x,0))
             x += dx
             #Move background image
-            if x > (bg.get_size()[0] - surface.get_size()[0]) / 2:
+            if x > (bg.get_size()[0] - surface.get_size()[0]) / 1:
                 dx = 0
 
             message.draw(text, surface)
