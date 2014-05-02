@@ -225,9 +225,13 @@ class Pers():
     hp = maxhp
 
 class Game():
+    """Game logics handling"""
 
-    #Initialize new pers
+    #===== VARIABLES =====
     pers = Pers()
+
+    def menu(self, surface):
+        mainMenu = Screens().menu(surface)
 
     def start(self, surface, name):
         if os.path.isfile('Saves/' + name):
@@ -257,5 +261,5 @@ class Game():
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)
     screen = pg.display.set_mode(SIZE)
-    mainMenu = Screens().menu(screen)
+    Game().menu(screen)
     pg.quit()
