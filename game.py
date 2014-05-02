@@ -125,11 +125,13 @@ class Screens():
         x, dx = 0, 1
         message = interface.Message(surface)
         clock = pg.time.Clock()
-        allstep = len(d.introtext) - 1 #Number of step images
+        it = d.IntroText(name)
+        allstep = len(it.introtext) - 1 #Number of step images
+        allstep2 = len(it.introtext2) - 1
         step = 0 #Number of current intro slide
         bg = pg.image.load('Images/Intro/intro0.jpg')
         imusic = pg.mixer.Sound('Music/intro.ogg')
-        text = d.introtext[0]
+        text = it.introtext[0]
         if pg.mixer.get_busy():
             pg.mixer.stop()
         imusic.play()
@@ -147,17 +149,32 @@ class Screens():
                         if not pg.mixer.get_busy():
                             imusic = pg.mixer.Sound('Music/intro2.ogg')
                             imusic.play()
-                        text = d.introtext[step]
+                        text = it.introtext[step]
+                        x, dx = 0, 1
+                    elif step == allstep:
+                        bg = pg.image.load('Images/blackscreen.jpg')
+                        text = ''
+                        step += 1
+                        imusic.stop()
+                        x, dx = 0, 0
+                    elif step - 2 < allstep + allstep2:
+                        bg = pg.image.load('Images/Intro/intro' + str(step-1) + '.jpg')
+                        if not pg.mixer.get_busy():
+                            imusic = pg.mixer.Sound('Music/intro3.ogg')
+                            imusic.play()
+                        text = it.introtext2[step - allstep - 1]
+                        step += 1
                         x, dx = 0, 1
                     else:
                         return()
 
             surface.fill(0)
             surface.blit(bg, (-x,0))
-            x += dx
-            #Move background image
-            if x > (bg.get_size()[0] - surface.get_size()[0]) / 1:
-                dx = 0
+            if bg.get_size()[0] > 1100:
+                x += dx
+                #Move background image
+                if x > (bg.get_size()[0] - surface.get_size()[0]) / 1:
+                    dx = 0
 
             message.draw(text, surface)
 
@@ -222,8 +239,11 @@ class Screens():
 class Mob():
     name = 'Skeleton'
 
+class Quest():
+    print('Class for quests and tasks and notes')
+
 class Pers():
-    place = 'Great Fault'
+    place = 'OldManHouse'
     maxhp = 20
     hp = maxhp
 
@@ -237,6 +257,7 @@ class Game():
         mainMenu = Screens().menu(surface)
 
     def start(self, surface, name):
+        d.chname(name)
         if os.path.isfile('Saves/' + name):
             self.load(name)
         else:
