@@ -2,11 +2,6 @@ valeMobs = {
     'Chance': 50
 }
 
-NAME = ''
-
-def chname(name):
-    NAME = name
-
 class IntroText():
 
     def __init__(self, name):
