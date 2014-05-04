@@ -28,6 +28,7 @@ class Mob():
     name = 'Skeleton'
 
 class Quest():
+    """This quests will append to pers.quests list"""
     print('Class for quests and tasks and notes')
 
 class Pers():
@@ -60,10 +61,10 @@ class Game():
         while True:
             #Menu / login screen
             while pers.name == '':
-                option = Screens().menu(surface)
-                #if option == 1:    #Future-way to handle multiple options
-                if option:
+                login = Screens().menu(surface)
+                if login:
                     pers.name = Screens().login(surface)
+
             #Save / load game + run introduction
             if not started:
                 if os.path.isfile('Saves/' + pers.name):

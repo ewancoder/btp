@@ -20,6 +20,10 @@ class EwMenu():
         self.SOUND = pg.mixer.Sound('Sounds/select.ogg')
 
     def update(self):
+        #KOSTYL FOR 0
+        if self.now == -1:
+            self.now = 0
+        self.selected = 0
         self.items = [{'Label': i[0], 'Action': i[1]} for i in self.ITEMS[self.now]]
 
     def draw(self, surface):
@@ -46,6 +50,5 @@ class EwMenu():
                     self.SOUND.play()
                     self.items[self.selected]['Action']()
         if self.now != 0:
-            update(self.ITEMS)
-            print(self.now)
+            self.update()
             self.now = 0

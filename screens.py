@@ -17,17 +17,16 @@ class Screens():
         clock = pg.time.Clock()
 
         #===== CONSTANTS =====
-        #Load files
         BG = pg.image.load('Images/background.jpg')
         MENU_MUSIC = pg.mixer.Sound('Music/menu.ogg')
         MAIN_MENU = (
-            ['Start / Load Game', lambda: setattr(self, 'ret', 1)],
-            ['Settings', lambda: setattr(self, 'ret', 1)],
+            ['Start / Load Game', lambda: setattr(self, 'ret', 'login')],
+            ['Settings', lambda: setattr(menu, 'now', 1)],
             ['Quit', lambda: exit()]
         )
         SETTINGS_MENU = (
             ['This is settings example', lambda: print('There will be settings.')],
-            ['Back', lambda: setattr(menu, 'goto', 1)]
+            ['Back', lambda: setattr(menu, 'now', -1)]
         )
         MENU = (
             MAIN_MENU,
@@ -44,7 +43,6 @@ class Screens():
             clock.tick(30)
             if self.ret != 0:
                 return self.ret
-            self.ret = 0
 
             #===== EVENTS =====
             events = pg.event.get()
