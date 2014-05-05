@@ -4,15 +4,16 @@
     Copyright (c) 2014 EwanCoder <ewancoder@gmail.com> GPL
 
     This game blends these independent concepts:
-        1. Supernatural world, based on CW Supernatural Show
-        2. Text-based rpg quest game
-        3. Type game - the faster you type, the more you gain
+        1. Formerly upernatural world, based on CW Supernatural Show
+        2. Nowadays my own fantasy world with all kinds of creatures
+        3. Text-based rpg quest game
+        4. Type game - the faster you type, the more you gain
 """
 
 from screens import Screens
 
 import os #For checking file existence
-import pickle #For save/load gamedata
+import pickle
 import random
 
 import pygame as pg
@@ -25,24 +26,28 @@ SIZE = (1000, 700)
 
 #========== CLASSES ==========
 class Mob():
-    name = 'Skeleton'
+    """Class for mobs handling"""
+    name = 'Skeleton' #: Just variable
 
 class Quest():
     """This quests will append to pers.quests list"""
     print('Class for quests and tasks and notes')
 
 class Pers():
-    name = ''   #Player's name - just for saving and loading without passing arguments
-    place = 'OldManHouse'   #Current place
-    maxhp = 20              #Max hitpoints
-    hp = maxhp              #Current hitpoints
+    """Class containing all player info"""
+    name = ''   #: Player's name - just for saving and loading without passing arguments
+    place = 'OldManHouse'   #: Current place
+    maxhp = 20              #: Max hitpoints
+    hp = maxhp              #: Current hitpoints
 
     def save(self):
+        """Saves player to file"""
         with open('Saves/' + self.name, 'wb') as f:
             pickle.dump(self, f)
             print('Game saved as ' + self.name)
 
     def load(self):
+        """Load player from file"""
         with open('Saves/' + self.name, 'rb') as f:
             self = pickle.load(f)
             print('Game loaded as ' + self.name)
@@ -50,12 +55,15 @@ class Pers():
 class Game():
     """Game logics handling"""
 
+    name = '' #: lol
+
     def loop(self, surface):
+        """Main function of the game"""
 
         #===== VARIABLES =====
-        name = ''       #Name of current pers
-        pers = Pers()   #Main pers object
-        started = False #If savegame is loaded/created, do not load it twice+
+        name = ''       #: Name of current pers
+        pers = Pers()   #: Main pers object
+        started = False #: If savegame is loaded/created, do not load it twice+
 
         #===== MAIN LOOP =====
         while True:
@@ -72,15 +80,15 @@ class Game():
                 else:
                     pers.save()
                     Screens().introduction(surface, pers.name)
-                started = True  #Prevent multiple game loading
-            #Load map at current state
+                started = True  #: Prevent multiple game loading
+            #: Load map at current state
             (pers.place, mobs) = Screens().map(surface, pers.place)
             #Load battle if attacked
             if random.randrange(0, 100) < mobs['Chance']:
                 pers = Screens().battle(surface, mobs, pers, Mob())
             #If anything else for screens -> Screens().anythingelse()
             #Check_upon_death + check_upon_new_level + everything else (Pers.update?)
-            #Save game with each iteration (each screen + after battle)
+            #: Save game with each iteration (each screen + after battle)
             self.save()
 
 #========== MAIN PROGRAM ==========
