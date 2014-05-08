@@ -1,7 +1,7 @@
 Big TyperNatural Project (BTP) overview
 ***************************************
 
-This page describes everything about the idea itself and **abstract** things. If you wish some **technical** project info, you may be interested in :doc:`structure`.
+This page describes everything about the idea itself and **abstract** things. If you wish some **technical** project info, you may be interested in [[structure]].
 
 .. contents::
    :depth: 10

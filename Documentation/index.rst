@@ -22,6 +22,8 @@ Contents:
     about
     use
     features
+    game
+    plot
 
 How to get it?
 ==============
