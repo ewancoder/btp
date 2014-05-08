@@ -3,13 +3,8 @@ Big TyperNatural Project (BTP) overview
 
 This page describes everything about the idea itself and **abstract** things. If you wish some **technical** project info, you may be interested in :doc:`structure`.
 
-Contents
-========
-
-    .. toctree::
-    :maxdepth: 0
-
-    about
+.. contents::
+   :depth: 10
 
 History
 =======
