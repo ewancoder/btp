@@ -33,7 +33,7 @@ To download lastest (stable) version from git, either click `this link (ZIP) <ht
     #or wget
     wget https://github.com/ewancoder/btp/archive/master.zip
 
-To download development version, simply change 'master' to 'dev' in the link.
+To download development version, simply change 'master' to 'dev' in the link or `click here (ZIP) <https://github.com/ewancoder/btp/archive/dev.zip>`_.
 
 Then you can just execute **game.py** file by cd in the downloaded directory and executing game like this::
 
@@ -49,4 +49,7 @@ And maybe you don't want to make this file executable, then you can just run it 
     python game.py
 
 .. note::
-    Don't forget to install both **python** and **pygame**.
+   You can use python2 or python3 whichever you like, the game is cross-versioned.
+
+.. warning::
+   Don't forget to install both **python** and **pygame**.
