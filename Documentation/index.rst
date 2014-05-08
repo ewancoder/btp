@@ -12,7 +12,7 @@ Contents:
     :maxdepth: 10
 
     about
-    plot
+    use
     dev
     features
 
