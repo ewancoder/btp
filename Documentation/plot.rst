@@ -1,5 +1,5 @@
-Game Story
-**********
+Game Story + how to play + user wiki
+************************************
 
 Before Great Fault
 ==================
