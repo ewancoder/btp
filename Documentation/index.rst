@@ -19,7 +19,7 @@ Contents:
 How to get it?
 ==============
 
-First of all, to run it you will need **python** and **pygame**. Go on their main site and download executables for your OS, or just install it by your package manager::
+First of all, to run it you will need `python <http://www.python.org>`_ and `pygame <http://www.pygame.org>`_. Download them for your OS, or just install it by your package manager::
 
     apt-get     install     python pygame
     aptitude    install     python pygame
