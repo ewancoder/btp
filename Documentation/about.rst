@@ -1,19 +1,19 @@
 Big TyperNatural Project (BTP) overview
 ***************************************
 
-This page describes everything about the idea itself and **abstract** things. If you wish some **technical** project info, you may be interested in [[structure]].
+This page describes everything about the history of project startup, the idea itself and **abstract** things. If you wish some **technical** project info, you may be interested in :doc:`dev`.
 
 .. contents::
-   :depth: 10
+   :depth: 3
 
 History
 =======
 
-Now I'll briefly tell you what and how inspired me to do such a thing - text based rpg game in nowadays world, and what stages I had been through while developing it. I'm developing it since 2008. It was my pro-skill to create a game as a way of **learning** new programming language. It's funny, it's interesting. And it's significantly **useful**! Cause, you know, the best way to learn language is to **practice it**. I set my goal - I do that and I learn new language. So, I had developed games firstly in Basic, Pascal, Delphi, then in lots of other languages such as C, C++, Java, then I had created web-browser games using php, mysql and javascript (html and css are stylesheet and markup languages, which I do not count as programming languages). So there was lots of languages and I do not remember all of them.
+Now I'm going to tell you briefly what and how have inspired me to do such a thing - text based rpg game in nowadays world, and what stages I have been through while developing it. I'm developing it since 2008. It was my pro-skill to create a game as a way of **learning** new programming language. It's funny, it's interesting. And it's significantly **useful**! Cause, you know, the best way to learn language is to **practice it**. I set my goal - I do that and I learn new language. So, I were developing games firstly in Basic, Pascal, Delphi, then in lots of other languages such as C, C++, Java, then I started creating web-browser games using php, mysql and javascript (html and css are stylesheet and markup languages, which I do not count as programming languages). So there was lots of languages, I don't even remember all list of them.
 
-I've been developing this games and learnt different things. From how to read files up to how to create inventory and skills and items... This was really great practice. Why **was**? Because now I am actually building The Game. The real one. Because I'm in love with **python** and I don't think that I'll find anything more suitable for my current goal.
+I've been developing this games and learnt different things. From how to read files up to how to create inventory and skills and items... This was really great practice. Why **was**? Because now I am **actually** writing The Game. The real one. Because I'm in love with **python** and I don't think that I'll find anything more suitable for my current goal.
 
-In the past it was Big Supernatural Project - big supernatural roleplaying text-based game based on CWTV Supernatural show. One version of the game was even included simultaneous play with two characters at once - Dean and Sam (two brother, main characters of Supernatural TV Show).
+In the past it was Big Supernatural Project - big supernatural roleplaying text-based game based on CWTV Supernatural show. One version of the game was even made to play simultaneously by two characters at once - Dean and Sam (two brother, main characters of Supernatural TV Show).
 
 But when I had thought to make it real (last time it was with C++ and QT) - I understood that there're lots of licences in real world, copyrights and other crap. So, even if my game will be opensource and free (which I am direct to), if it will become awesome and famous (which is not likely to happen) some companies might be offended, litigate with me and other crap. So that was when I decided to make a game based on Supernatural world, but without any characters from TV Show (actually I was intended to make some cross-reference with them). And I thought that it would be great to have the action going in other times - in 80th, for example.
 
