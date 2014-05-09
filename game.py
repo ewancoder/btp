@@ -4,10 +4,9 @@
     Copyright (c) 2014 EwanCoder <ewancoder@gmail.com> GPL
 
     This game blends these independent concepts:
-        1. Formerly upernatural world, based on CW Supernatural Show
-        2. Nowadays my own fantasy world with all kinds of creatures
-        3. Text-based rpg quest game
-        4. Type game - the faster you type, the more you gain
+        1. Based on my own story - fantasy world with all kinds of creatures
+        2. Text-based rpg quest game
+        3. Typo game - the faster you type, the more you gain
 """
 
 from screens import Screens
@@ -26,15 +25,12 @@ SIZE = (1000, 700)
 
 #========== CLASSES ==========
 class Mob():
-    """Class for mobs handling"""
     name = 'Skeleton' #: Just variable
 
 class Quest():
-    """This quests will append to pers.quests list"""
     print('Class for quests and tasks and notes')
 
 class Pers():
-    """Class containing all player info"""
     name = ''   #: Player's name - just for saving and loading without passing arguments
     place = 'OldManHouse'   #: Current place
     maxhp = 20              #: Max hitpoints
@@ -53,8 +49,6 @@ class Pers():
             print('Game loaded as ' + self.name)
 
 class Game():
-    """Game logics handling"""
-
     name = '' #: lol
 
     def loop(self, surface):
