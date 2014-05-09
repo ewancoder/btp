@@ -1,2 +1,7 @@
-All current featurest + version history (maybe pulling from git) + TODO list
-****************************************************************************
+Features and TODO
+*****************
+
+.. contents::
+   :depth: 2
+
+.. todolist::

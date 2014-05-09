@@ -273,4 +273,10 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+    'sphinx': ('http://sphinx-doc.org', None),
+    'python': ('http://docs.python.org', None)
+}
+
+# Variable for TODO
+todo_include_todos = True
