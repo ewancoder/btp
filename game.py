@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-#I am aiming to write this code both in python3 and python2 for learning sake (python2 for wide people range, python3 for future and coolness)
 """
-    Copyright (c) 2014 EwanCoder <ewancoder@gmail.com> GPL
+Main game module uses :mod:`screens` module to wrap around all interfaces.
 
-    This game blends these independent concepts:
-        1. Based on my own story - fantasy world with all kinds of creatures
-        2. Text-based rpg quest game
-        3. Typo game - the faster you type, the more you gain
+Imports
+-------
+
+    :mod:`screens` - handles all interfaces
+
+    :mod:`os` - need for checking file existence (not really pythonic way)
+
+    :mod:`pickle` - need for easy save/load :class:`game.Pers` class
+
+    :mod:`random` - need for calculating mobs attack chance
+
+    :mod:`pygame` - main module for the game
 """
 
-from screens import Screens
+import screens
 
 import os #For checking file existence
 import pickle
@@ -63,9 +70,9 @@ class Game():
         while True:
             #Menu / login screen
             while pers.name == '':
-                login = Screens().menu(surface)
+                login = screens.Menu().main(surface)
                 if login:
-                    pers.name = Screens().login(surface)
+                    pers.name = screens.Login().main(surface)
 
             #Save / load game + run introduction
             if not started:
@@ -73,17 +80,17 @@ class Game():
                     pers.load()
                 else:
                     pers.save()
-                    Screens().introduction(surface, pers.name)
+                    screens.Introduction().main(surface, pers.name)
                 started = True  #: Prevent multiple game loading
             #: Load map at current state
-            (pers.place, mobs) = Screens().map(surface, pers.place)
+            (pers.place, mobs) = screens.Map().main(surface, pers.place)
             #Load battle if attacked
             if random.randrange(0, 100) < mobs['Chance']:
-                pers = Screens().battle(surface, mobs, pers, Mob())
+                pers = screens.Battle.main(surface, mobs, pers, Mob())
             #If anything else for screens -> Screens().anythingelse()
             #Check_upon_death + check_upon_new_level + everything else (Pers.update?)
             #: Save game with each iteration (each screen + after battle)
-            self.save()
+            pers.save()
 
 #========== MAIN PROGRAM ==========
 if __name__ == '__main__':
