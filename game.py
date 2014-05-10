@@ -52,10 +52,10 @@ class Game():
         while True:
             #: Create menu
             while pers.name == '':
-                login = screens.Menu(surface)
+                login = screens.Menu().main(surface)
                 #: Create loginscreen
                 if login:
-                    pers.name = screens.Login(surface)
+                    pers.name = screens.Login().main(surface)
 
             #: Load game of save new game, then started=True
             if not started:
@@ -63,11 +63,11 @@ class Game():
                     pers.load()
                 else:
                     pers.save()
-                    screens.Introduction(surface, pers.name)
+                    screens.Introduction().main(surface, pers.name)
                 started = True
-            (pers.place, mobs) = screens.World(surface, pers.place)
+            (pers.place, mobs) = screens.World().main(surface, pers.place)
             if random.randrange(0, 100) < mobs['Chance']:
-                pers = screens.Battle(surface, mobs, pers, Mob())
+                pers = screens.Battle().main(surface, mobs, pers, Mob())
             #: Save each loop
             pers.save()
 
