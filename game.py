@@ -11,13 +11,19 @@ pg.mixer.pre_init(22050, -16, True, 512)
 pg.init()
 
 #===== CONSTANTS =====
-CAPTION = 'Big Typernatural Project'
-SIZE = (1000, 700)
+CAPTION = 'Big Typernatural Project'    #: Main window caption
+SIZE = (1000, 700)                      #: Size of main window (should be at least the size of images in Images folder
 
 #===== CLASSES =====
 class Mob():
-    maxhp = 20
+    """Creates new monster which to fight you"""
+
+    maxhp = 20  #: Sets within __init__ method, max hitpoints
     hp = maxhp
+
+    def __init__(self, maxhp):
+        """Sets maxhp"""
+        self.maxhp = maxhp
 
 class Quest():
     print('Class for quests and tasks and notes')
@@ -42,7 +48,11 @@ class Pers():
 
 class Game():
     def loop(self, surface):
-        """Main function loop of the game, which loops while true"""
+        """Main function loop of the game, which loops while true
+        
+        :param surface: A surface on which all will be drawing
+        :var pers: main Pers() object
+        """
 
         #===== VARIABLES =====
         pers = Pers()

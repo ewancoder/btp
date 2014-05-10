@@ -27,3 +27,4 @@ Modules
    :maxdepth: 2
 
    game
+   screens
