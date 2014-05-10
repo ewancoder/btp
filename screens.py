@@ -13,7 +13,7 @@ class Menu():
 
     ret = 0
 
-    def main(self, surface):
+    def __init__(self, surface):
         clock = pg.time.Clock()
 
         #===== CONSTANTS =====
@@ -69,8 +69,8 @@ class Menu():
             #===== SCREEN REFRESH =====
             pg.display.flip()
 
-class Map():
-    def main(self, surface, place):
+class World():
+    def __init__(self, surface, place):
         x, dx = 0, 1
         message = interface.Message(surface)
         inputBox = interface.Input(surface)
@@ -108,7 +108,7 @@ class Map():
             pg.display.flip()
 
 class Introduction():
-    def main(self, surface, name):
+    def __init__(self, surface, name):
         x, dx = 0, 1
         message = interface.Message(surface)
         clock = pg.time.Clock()
@@ -168,7 +168,7 @@ class Introduction():
             pg.display.flip()
 
 class Login():
-    def main(self, surface):
+    def __init__(self, surface):
         x, dx = 0, 1
         message = interface.Message(surface)
         parchment = interface.Parchment(surface)
@@ -216,7 +216,7 @@ class Login():
             pg.display.flip()
 
 class Battle():
-    def main(self, surface, mobs, pers, mob):
+    def __init__(self, surface, mobs, pers, mob):
         battleInput = interface.Input(surface)
         clock = pg.time.Clock()
         while True:
@@ -224,5 +224,3 @@ class Battle():
             battleInput.draw(surface)
 
         return pers
-
-

@@ -1,24 +1,8 @@
 #!/usr/bin/env python3
-"""
-Main game module uses :mod:`screens` module to wrap around all interfaces.
-
-Imports
--------
-
-    :mod:`screens` - handles all interfaces
-
-    :mod:`os` - need for checking file existence (not really pythonic way)
-
-    :mod:`pickle` - need for easy save/load :class:`game.Pers` class
-
-    :mod:`random` - need for calculating mobs attack chance
-
-    :mod:`pygame` - main module for the game
-"""
 
 import screens
 
-import os #For checking file existence
+import os
 import pickle
 import random
 
@@ -26,73 +10,68 @@ import pygame as pg
 pg.mixer.pre_init(22050, -16, True, 512)
 pg.init()
 
-#========== CONSTANTS ==========
+#===== CONSTANTS =====
 CAPTION = 'Big Typernatural Project'
 SIZE = (1000, 700)
 
-#========== CLASSES ==========
+#===== CLASSES =====
 class Mob():
-    name = 'Skeleton' #: Just variable
+    maxhp = 20
+    hp = maxhp
 
 class Quest():
     print('Class for quests and tasks and notes')
 
 class Pers():
-    name = ''   #: Player's name - just for saving and loading without passing arguments
-    place = 'OldManHouse'   #: Current place
-    maxhp = 20              #: Max hitpoints
-    hp = maxhp              #: Current hitpoints
+    name = ''
+    place = 'OldManHouse'
+    maxhp = 20
+    hp = maxhp
 
     def save(self):
-        """Saves player to file"""
+        """Saves self Pers() object to file"""
         with open('Saves/' + self.name, 'wb') as f:
             pickle.dump(self, f)
             print('Game saved as ' + self.name)
 
     def load(self):
-        """Load player from file"""
+        """Load self Pers() object from file"""
         with open('Saves/' + self.name, 'rb') as f:
             self = pickle.load(f)
             print('Game loaded as ' + self.name)
 
 class Game():
-    name = '' #: lol
-
     def loop(self, surface):
-        """Main function of the game"""
+        """Main function loop of the game, which loops while true"""
 
         #===== VARIABLES =====
-        name = ''       #: Name of current pers
-        pers = Pers()   #: Main pers object
-        started = False #: If savegame is loaded/created, do not load it twice+
+        pers = Pers()
+        started = False #: Prevent multiple game loads + game quit to menu trigger
 
         #===== MAIN LOOP =====
         while True:
-            #Menu / login screen
+            #: Create menu
             while pers.name == '':
-                login = screens.Menu().main(surface)
+                login = screens.Menu(surface)
+                #: Create loginscreen
                 if login:
-                    pers.name = screens.Login().main(surface)
+                    pers.name = screens.Login(surface)
 
-            #Save / load game + run introduction
+            #: Load game of save new game, then started=True
             if not started:
                 if os.path.isfile('Saves/' + pers.name):
                     pers.load()
                 else:
                     pers.save()
-                    screens.Introduction().main(surface, pers.name)
-                started = True  #: Prevent multiple game loading
-            #: Load map at current state
-            (pers.place, mobs) = screens.Map().main(surface, pers.place)
-            #Load battle if attacked
+                    screens.Introduction(surface, pers.name)
+                started = True
+            (pers.place, mobs) = screens.World(surface, pers.place)
             if random.randrange(0, 100) < mobs['Chance']:
-                pers = screens.Battle.main(surface, mobs, pers, Mob())
-            #If anything else for screens -> Screens().anythingelse()
-            #Check_upon_death + check_upon_new_level + everything else (Pers.update?)
-            #: Save game with each iteration (each screen + after battle)
+                pers = screens.Battle(surface, mobs, pers, Mob())
+            #: Save each loop
             pers.save()
 
-#========== MAIN PROGRAM ==========
+#===== MAIN PROGRAM =====
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)
     screen = pg.display.set_mode(SIZE)
