@@ -9,11 +9,11 @@ import os
 
 import pygame as pg
 
-class Screens():
+class Menu():
 
     ret = 0
 
-    def menu(self, surface):
+    def __init__(self, surface):
         clock = pg.time.Clock()
 
         #===== CONSTANTS =====
@@ -69,7 +69,8 @@ class Screens():
             #===== SCREEN REFRESH =====
             pg.display.flip()
 
-    def map(self, surface, place):
+class World():
+    def __init__(self, surface, place):
         x, dx = 0, 1
         message = interface.Message(surface)
         inputBox = interface.Input(surface)
@@ -106,7 +107,8 @@ class Screens():
 
             pg.display.flip()
 
-    def introduction(self, surface, name):
+class Introduction():
+    def __init__(self, surface, name):
         x, dx = 0, 1
         message = interface.Message(surface)
         clock = pg.time.Clock()
@@ -165,7 +167,8 @@ class Screens():
 
             pg.display.flip()
 
-    def login(self, surface):
+class Login():
+    def __init__(self, surface):
         x, dx = 0, 1
         message = interface.Message(surface)
         parchment = interface.Parchment(surface)
@@ -212,7 +215,8 @@ class Screens():
 
             pg.display.flip()
 
-    def battle(self, surface, mobs, pers, mob):
+class Battle():
+    def __init__(self, surface, mobs, pers, mob):
         battleInput = interface.Input(surface)
         clock = pg.time.Clock()
         while True:
@@ -220,5 +224,3 @@ class Screens():
             battleInput.draw(surface)
 
         return pers
-
-
