@@ -22,7 +22,8 @@ class Menu():
         MAIN_MENU = (
             ['Start / Load Game', lambda: setattr(self, 'ret', 'login')],
             ['Settings', lambda: setattr(menu, 'now', 1)],
-            ['Quit', lambda: exit()]
+            ['Quit', lambda: exit()],
+            ['SuperDuper COMMERCIAL РЕКЛАМА ОЛОЛО КОКОКО для САНИ', lambda: exit()]
         )
         SETTINGS_MENU = (
             ['This is settings example', lambda: print('There will be settings.')],
