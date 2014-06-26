@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import screens
-
 import os
 import pickle
 import random
@@ -9,6 +7,8 @@ import random
 import pygame as pg
 pg.mixer.pre_init(22050, -16, True, 512)
 pg.init()
+
+import screens
 
 #===== CONSTANTS =====
 CAPTION = 'Big Typernatural Project'
@@ -53,11 +53,11 @@ class Game():
             #: Create menu
             while pers.name == '':
                 login = screens.Menu().main(surface)
-                #: Create loginscreen
+                #: If login (menu) returned a value - create loginscreen
                 if login:
                     pers.name = screens.Login().main(surface)
 
-            #: Load game of save new game, then started=True
+            #: Load game or save new game, then started=True
             if not started:
                 if os.path.isfile('Saves/' + pers.name):
                     pers.load()

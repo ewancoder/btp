@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-import data as d #All text data + map dictionaries and etc.
-
-import interface
-import ewmenu
-
 import os
 
 import pygame as pg
+
+import data as d #All text data + map dictionaries and etc.
+import ewmenu
+import interface
 
 class Menu():
 
