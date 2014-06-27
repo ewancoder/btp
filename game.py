@@ -52,10 +52,11 @@ class Game():
         while True:
             #: Create menu
             while pers.name == '':
-                login = screens.Menu(surface)
+                mainScreen = screens.Menu(surface).loop()
                 #: If login (menu) returned a value - create loginscreen
-                if login:
-                    pers.name = screens.Login(surface)
+                if mainScreen == 'login':
+                    #loginScreen
+                    pers.name = screens.Login(surface).loop()
 
             #: Load game or save new game, then started=True
             if not started:

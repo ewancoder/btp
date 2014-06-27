@@ -4,21 +4,23 @@ import os
 
 import pygame as pg
 
-import data as d #All text data + map dictionaries and etc.
+import data as d
 import interface
 
 class Menu():
 
-    ret = 0
-
     BG = pg.image.load('Images/background.jpg')
     MENU_MUSIC = pg.mixer.Sound('Music/menu.ogg')
+    
+    ret = ''
 
     def __init__(self, surface):
+        self.surface = surface
+
         MAIN_MENU = (
             ['Start / Load Game', lambda: setattr(self, 'ret', 'login')],
             ['Settings', lambda: setattr(self.menu, 'now', 1)],
-            ['Quit', lambda: exit()]
+            ['Quit', lambda: quit()]
         )
         SETTINGS_MENU = (
             ['This is settings example', lambda: print('There will be settings.')],
@@ -29,46 +31,33 @@ class Menu():
             SETTINGS_MENU
         )
 
-        #Construct menu
         self.menu = interface.Menu(MENU)
 
-        #Enter menu
-        self.loop(surface)
-
-    def loop(self, surface):
+    def loop(self):
         clock = pg.time.Clock()
-        x, dx = 0, 1    #Background movement
+        x, dx = 0, 1
 
-        #===== MAIN LOOP =====
         while True:
             clock.tick(30)
-            if self.ret != 0:
-                #Return 'login' to game main loop for going to login [on start-game menu item]
+            if self.ret != '':
                 return self.ret
 
-            #===== EVENTS =====
             events = pg.event.get()
             for e in events:
                 if e.type == pg.QUIT:
-                    return
-            #Processing menu events
+                    quit()
             self.menu.events(events)
 
-            #===== CALCULATIONS =====
-            #Turn on music if not playing
             if not pg.mixer.get_busy():
                 self.MENU_MUSIC.play(-1)
-            #Move background image
             x += dx
-            if x > self.BG.get_size()[0] - surface.get_size()[0] or x <= 0:
+            if x > self.BG.get_size()[0] - self.surface.get_size()[0] or x <= 0:
                 dx *= -1
 
-            #===== DRAWING =====
-            surface.fill(0)
-            surface.blit(self.BG, (-x, 0))
-            self.menu.draw(surface)
+            self.surface.fill(0)
+            self.surface.blit(self.BG, (-x, 0))
+            self.menu.draw(self.surface)
 
-            #===== SCREEN REFRESH =====
             pg.display.flip()
 
 class World():
@@ -100,7 +89,6 @@ class World():
             surface.fill(0)
             surface.blit(bg, (-x,0))
             x += dx
-            #Move background image
             if x > (bg.get_size()[0] - surface.get_size()[0]) / 2:
                 dx = 0
 
@@ -115,9 +103,9 @@ class Introduction():
         message = interface.Message(surface)
         clock = pg.time.Clock()
         it = d.IntroText(name)
-        allstep = len(it.introtext) - 1 #Number of step images
+        allstep = len(it.introtext) - 1
         allstep2 = len(it.introtext2) - 1
-        step = 0 #Number of current intro slide
+        step = 0
         bg = pg.image.load('Images/Intro/intro0.jpg')
         imusic = pg.mixer.Sound('Music/intro.ogg')
         text = it.introtext[0]
@@ -171,15 +159,14 @@ class Introduction():
 
 class Login():
     def __init__(self, surface):
+        self.surface = surface
+
         self.message = interface.Message(surface)
         self.parchment = interface.Parchment(surface)
         self.text = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
         self.bg = pg.image.load('Images/login.jpg')
 
-        #Enter login
-        self.loop(surface)
-
-    def loop(self, surface):
+    def loop(self):
         clock = pg.time.Clock()
         x, dx = 0, 1
         intro = False
@@ -207,16 +194,16 @@ class Login():
                     intro = True
                 return name
 
-            surface.fill(0)
-            surface.blit(self.bg, (-x,0))
+            self.surface.fill(0)
+            self.surface.blit(self.bg, (-x,0))
             x += dx
             #Move background image
-            if x > (self.bg.get_size()[0] - surface.get_size()[0]) / 2:
+            if x > (self.bg.get_size()[0] - self.surface.get_size()[0]) / 2:
                 dx = 0
 
-            self.message.draw(self.text, surface)
+            self.message.draw(self.text, self.surface)
             if step == 0:
-                self.parchment.draw(surface)
+                self.parchment.draw(self.surface)
 
             pg.display.flip()
 
