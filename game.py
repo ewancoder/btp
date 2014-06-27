@@ -15,12 +15,12 @@ CAPTION = 'Big Typernatural Project'
 SIZE = (1000, 700)
 
 #===== CLASSES =====
-class Mob():
-    maxhp = 20
-    hp = maxhp
+#class Mob():
+#    maxhp = 20
+#    hp = maxhp
 
-class Quest():
-    print('Class for quests and tasks and notes')
+#class Quest():
+#    print('Class for quests and tasks and notes')
 
 class Pers():
     name = ''
@@ -52,10 +52,10 @@ class Game():
         while True:
             #: Create menu
             while pers.name == '':
-                login = screens.Menu().main(surface)
+                login = screens.Menu(surface)
                 #: If login (menu) returned a value - create loginscreen
                 if login:
-                    pers.name = screens.Login().main(surface)
+                    pers.name = screens.Login(surface)
 
             #: Load game or save new game, then started=True
             if not started:
@@ -63,11 +63,11 @@ class Game():
                     pers.load()
                 else:
                     pers.save()
-                    screens.Introduction().main(surface, pers.name)
+                    screens.Introduction().loop(surface, pers.name)
                 started = True
-            (pers.place, mobs) = screens.World().main(surface, pers.place)
+            (pers.place, mobs) = screens.World().loop(surface, pers.place)
             if random.randrange(0, 100) < mobs['Chance']:
-                pers = screens.Battle().main(surface, mobs, pers, Mob())
+                pers = screens.Battle().loop(surface, mobs, pers, Mob())
             #: Save each loop
             pers.save()
 
