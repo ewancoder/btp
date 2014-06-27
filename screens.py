@@ -5,7 +5,6 @@ import os
 import pygame as pg
 
 import data as d #All text data + map dictionaries and etc.
-import ewmenu
 import interface
 
 class Menu():
@@ -18,12 +17,12 @@ class Menu():
     def __init__(self, surface):
         MAIN_MENU = (
             ['Start / Load Game', lambda: setattr(self, 'ret', 'login')],
-            ['Settings', lambda: setattr(menu, 'now', 1)],
+            ['Settings', lambda: setattr(self.menu, 'now', 1)],
             ['Quit', lambda: exit()]
         )
         SETTINGS_MENU = (
             ['This is settings example', lambda: print('There will be settings.')],
-            ['Back', lambda: setattr(menu, 'now', -1)]
+            ['Back', lambda: setattr(self.menu, 'now', 0)]
         )
         MENU = (
             MAIN_MENU,
@@ -31,7 +30,7 @@ class Menu():
         )
 
         #Construct menu
-        self.menu = ewmenu.EwMenu(MENU)
+        self.menu = interface.Menu(MENU)
 
         #Enter menu
         self.loop(surface)
