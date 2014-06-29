@@ -8,7 +8,7 @@ class Menu():
     X, Y = 10, 10
     DCOLOR, HCOLOR = (200, 200, 100), (200, 100, 100)
     FONT = pg.font.Font('Fonts/rpg.ttf', 40)
-    SOUND = pg.mixer.Sound('Sounds/select.ogg')
+    SELECT_SOUND = pg.mixer.Sound('Sounds/select.ogg')
     
     #===== VARIABLES =====
     selected = 0    #Index of selected menu item
@@ -47,11 +47,9 @@ class Menu():
                     if self.selected > 0:
                         self.selected -= 1
                 elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
-                    self.SOUND.play()
+                    self.SELECT_SOUND.play()
                     self.items[self.selected]['Action']()
-        if self.now != 0:
-            self.update()
-            self.now = 0
+                    self.update()
 
 class Input():
 

@@ -11,9 +11,10 @@ class Menu():
 
     BG = pg.image.load('Images/background.jpg')
     MENU_MUSIC = pg.mixer.Sound('Music/menu.ogg')
-    
-    ret = ''
 
+    #Returns its value (exits Menu) if not ''
+    ret = ''
+    
     def __init__(self, surface):
         self.surface = surface
 
