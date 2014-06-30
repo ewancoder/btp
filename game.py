@@ -32,6 +32,7 @@ def gameLoop(surface):
                 pers.save()
                 screens.Introduction(surface, pers.name).loop()
             loaded = True
+
         (pers.place, mobs) = screens.World().loop(surface, pers.place)
         if random.randrange(0, 100) < mobs['Chance']:
             pers = screens.Battle().loop(surface, mobs, pers)

@@ -8,6 +8,7 @@ import classes
 import data as d
 import interface
 
+#Whole menu main screen
 class Menu():
 
     BG = pg.image.load('Images/background.jpg')
@@ -62,6 +63,7 @@ class Menu():
 
             pg.display.flip()
 
+#Whole world screen - picture, input field
 class World():
     def loop(self, surface, place):
         x, dx = 0, 1
@@ -99,6 +101,7 @@ class World():
 
             pg.display.flip()
 
+#Intro or just video-interference
 class Introduction():
     def __init__(self, surface, name):
         self.surface = surface
@@ -163,6 +166,7 @@ class Introduction():
 
             pg.display.flip()
 
+#Login screen (parchment + input field)
 class Login():
     def __init__(self, surface):
         self.surface = surface
@@ -213,6 +217,7 @@ class Login():
 
             pg.display.flip()
 
+#Whole battle screen with lots of skill-buttons and input for typing
 class Battle():
     def loop(self, surface, mobs, pers):
         mob = classes.Mob()
