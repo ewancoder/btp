@@ -4,6 +4,7 @@ import os
 
 import pygame as pg
 
+import classes
 import data as d
 import interface
 
@@ -99,11 +100,15 @@ class World():
             pg.display.flip()
 
 class Introduction():
-    def loop(self, surface, name):
+    def __init__(self, surface, name):
+        self.surface = surface
+        self.name = name
+
+    def loop(self):
         x, dx = 0, 1
-        message = interface.Message(surface)
+        message = interface.Message(self.surface)
         clock = pg.time.Clock()
-        it = d.IntroText(name)
+        it = d.IntroText(self.name)
         allstep = len(it.introtext) - 1
         allstep2 = len(it.introtext2) - 1
         step = 0
@@ -146,15 +151,15 @@ class Introduction():
                     else:
                         return()
 
-            surface.fill(0)
-            surface.blit(bg, (-x,0))
+            self.surface.fill(0)
+            self.surface.blit(bg, (-x,0))
             if bg.get_size()[0] > 1100:
                 x += dx
                 #Move background image
-                if x > (bg.get_size()[0] - surface.get_size()[0]) / 1:
+                if x > (bg.get_size()[0] - self.surface.get_size()[0]) / 1:
                     dx = 0
 
-            message.draw(text, surface)
+            message.draw(text, self.surface)
 
             pg.display.flip()
 
@@ -209,7 +214,8 @@ class Login():
             pg.display.flip()
 
 class Battle():
-    def loop(self, surface, mobs, pers, mob):
+    def loop(self, surface, mobs, pers):
+        mob = classes.Mob()
         battleInput = interface.Input(surface)
         clock = pg.time.Clock()
         while True:
