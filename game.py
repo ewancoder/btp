@@ -15,21 +15,21 @@ SIZE = (1000, 700)
 
 class Game():
     def loop(self, surface):
-        #===== VARIABLES =====
+        #===== VARS =====
         pers = classes.Pers()
-        started = False #: Prevent multiple game loads + game quit to menu trigger
+        started = False #Prevents multiple game loads
 
         #===== MAIN LOOP =====
         while True:
-            #: Create menu
+            #Create menu
             while pers.name == '':
                 mainScreen = screens.Menu(surface).loop()
-                #: If login (menu) returned a value - create loginscreen
+                #If mainScreen (menu) returned a value - create loginScreen
                 if mainScreen == 'login':
                     #loginScreen
                     pers.name = screens.Login(surface).loop()
 
-            #: Load game or save new game, then started=True
+            #Load game or save new game, then started=True
             if not started:
                 if os.path.isfile('Saves/' + pers.name):
                     pers.load()
@@ -40,7 +40,7 @@ class Game():
             (pers.place, mobs) = screens.World().loop(surface, pers.place)
             if random.randrange(0, 100) < mobs['Chance']:
                 pers = screens.Battle().loop(surface, mobs, pers, Mob())
-            #: Save each loop
+            #Save each loop
             pers.save()
 
 #===== MAIN PROGRAM =====
