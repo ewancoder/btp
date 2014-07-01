@@ -2,6 +2,11 @@ valeMobs = {
     'Chance': 50
 }
 
+begin = [
+    'lol',
+    'lol2'
+]
+
 class IntroText():
 
     def __init__(self, name):
@@ -43,6 +48,5 @@ class IntroText():
     ]
 
 place = []
-place.append({'Id': 'OldManHouse', 'Text': 'This is the place where you\'ve been raised. Old man are now gone [COUNT TIME]. So you are decided to go off [CHANGEABLE BY TIME AND OTHER FACTORS].\nYou can go [out] or [upstairs]. Also you can check [chest] under the window.', 'Actions': ['out', 'upstairs', 'chest'], 'Goto': ['Big Vale', 'Small Vale', 'Chest'], 'Mobs': valeMobs})
+place.append({'Id': 'World/OldManHouse', 'Text': 'This is the place where you\'ve been raised. Old man are now gone [COUNT TIME]. So you are decided to go off [CHANGEABLE BY TIME AND OTHER FACTORS].\nYou can go [out] or [upstairs]. Also you can check [chest] under the window.', 'Actions': ['out', 'upstairs', 'chest'], 'Goto': ['Big Vale', 'Small Vale', 'Chest'], 'Mobs': valeMobs})
 place.append({'Id': 'Big Vale', 'Text': 'There are smoke everywhere and big fire dance around the Great Fault\nYou can go [left] and [right]', 'Actions': ['left', 'right'], 'Goto': ['Big Vale', 'Small Vale'], 'Mobs': valeMobs})
-

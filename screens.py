@@ -5,7 +5,7 @@ import os
 import pygame as pg
 
 import classes
-import data as d
+import data
 import interface
 
 #Whole menu main screen
@@ -65,18 +65,63 @@ class Menu():
 
 #Whole world screen - picture, input field
 class World():
-    def loop(self, surface, place):
-        x, dx = 0, 1
-        message = interface.Message(surface)
+    def __init__(self, surface):
+        self.surface = surface
+        self.introIndex = 0
+        self.musicOldName = ''
+        self.intro = False
+        self.message = interface.Message(surface)
         inputBox = interface.Input(surface)
+
+    def update(self, pers):
+        print('updated')
+        introIndex = self.introIndex
+        musicOldName = self.musicOldName
+        intro = self.intro
+
+        #Need pers for pers.place & pers.name
+        if pers.place[:5] == 'intro':
+            intro = True
+            place = pers.place[5:]
+        else:
+            intro = False
+            place = pers.place
+
+        #IF INTRO = FALSE (3x times, below)
+        if intro == False:
+            PLACE = next(item for item in data.place if item['Id'] == place)
+            text = PLACE['Text']
+            bg = pg.image.load('Images/' + place + '.jpg')
+        else:
+            text = getattr(data, eval('place'))[introIndex]
+            if introIndex < len(getattr(data, eval('place'))):
+                introIndex += 1
+            else:
+                introIndex = 0
+                intro = False
+            bg = pg.image.load('Images/' + place + str(introIndex-1) + '.jpg')
+
+        musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
+        if musicOldName != musicName:
+            musicOldName = musicName
+            music = pg.mixer.Sound('Music/' + musicName + '.ogg')
+            if pg.mixer.get_busy():
+                pg.mixer.stop()
+            music.play()
+
+        self.intro = intro
+        self.bg = bg
+        self.text = text
+
+    def loop(self):
+        surface = self.surface
+        intro = self.intro
+        bg = self.bg
+        message = self.message
+        text = self.text
+
         clock = pg.time.Clock()
-        bg = pg.image.load('Images/Places/' + place + '.jpg')
-        imusic = pg.mixer.Sound('Music/intro.ogg')
-        PLACE = next(item for item in d.place if item['Id'] == place)
-        text = PLACE['Text']
-        if pg.mixer.get_busy():
-            pg.mixer.stop()
-        imusic.play()
+        x, dx = 0, 1
 
         while True:
             clock.tick(30)
@@ -84,11 +129,15 @@ class World():
             for e in events:
                 if e.type == pg.QUIT:
                     exit()
-            ievent = inputBox.events(events)
-            if ievent != None:
-                e = ievent
-                if e in PLACE['Actions']:
-                    return (PLACE['Goto'][PLACE['Actions'].index(e)], PLACE['Mobs'])
+                if e.type == pg.KEYDOWN:
+                    if e.key == pg.K_RETURN and intro == True:
+                        return
+            #IF INTRO = FALSE
+            if intro == False:
+                e = inputBox.events(events)
+                if e != None:
+                    if e in PLACE['Actions']:
+                        return (PLACE['Goto'][PLACE['Actions'].index(e)], PLACE['Mobs'])
 
             surface.fill(0)
             surface.blit(bg, (-x,0))
@@ -97,7 +146,9 @@ class World():
                 dx = 0
 
             message.draw(text, surface)
-            inputBox.draw(surface)
+            #IF INTRO == FALSE
+            if intro == False:
+                inputBox.draw(surface)
 
             pg.display.flip()
 
@@ -111,16 +162,16 @@ class Introduction():
         x, dx = 0, 1
         message = interface.Message(self.surface)
         clock = pg.time.Clock()
-        it = d.IntroText(self.name)
+        it = data.IntroText(self.name)
         allstep = len(it.introtext) - 1
         allstep2 = len(it.introtext2) - 1
         step = 0
         bg = pg.image.load('Images/Intro/intro0.jpg')
-        imusic = pg.mixer.Sound('Music/intro.ogg')
+        music = pg.mixer.Sound('Music/intro.ogg')
         text = it.introtext[0]
         if pg.mixer.get_busy():
             pg.mixer.stop()
-        imusic.play()
+        music.play()
 
         while True:
             clock.tick(30)
@@ -133,21 +184,21 @@ class Introduction():
                         step += 1
                         bg = pg.image.load('Images/Intro/intro' + str(step) + '.jpg')
                         if not pg.mixer.get_busy():
-                            imusic = pg.mixer.Sound('Music/intro2.ogg')
-                            imusic.play()
+                            music = pg.mixer.Sound('Music/intro2.ogg')
+                            music.play()
                         text = it.introtext[step]
                         x, dx = 0, 1
                     elif step == allstep:
                         bg = pg.image.load('Images/blackscreen.jpg')
                         text = ''
                         step += 1
-                        imusic.stop()
+                        music.stop()
                         x, dx = 0, 0
                     elif step - 2 < allstep + allstep2:
                         bg = pg.image.load('Images/Intro/intro' + str(step-1) + '.jpg')
                         if not pg.mixer.get_busy():
-                            imusic = pg.mixer.Sound('Music/intro3.ogg')
-                            imusic.play()
+                            music = pg.mixer.Sound('Music/intro3.ogg')
+                            music.play()
                         text = it.introtext2[step - allstep - 1]
                         step += 1
                         x, dx = 0, 1

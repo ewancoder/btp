@@ -15,6 +15,7 @@ SIZE = (1000, 700)
 
 def gameLoop(surface):
     pers = classes.Pers()
+    worldScreen = screens.World(surface)
 
     while True:
         while pers.name == '':
@@ -30,10 +31,11 @@ def gameLoop(surface):
                 if not os.path.isdir('Saves'):
                     os.mkdir('Saves')
                 pers.save()
-                screens.Introduction(surface, pers.name).loop()
+#                screens.Introduction(surface, pers.name).loop()
             loaded = True
 
-        (pers.place, mobs) = screens.World().loop(surface, pers.place)
+        worldScreen.update(pers)
+        (pers.place, mobs) = worldScreen.loop()
         if random.randrange(0, 100) < mobs['Chance']:
             pers = screens.Battle().loop(surface, mobs, pers)
         pers.save()
