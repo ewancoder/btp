@@ -71,24 +71,29 @@ class World():
         self.message = interface.Message(surface)
         self.musicOldName = ''
         self.surface = surface
-        inputBox = interface.Input(surface)
+        self.bg = '' #Because an error occur
+        self.text = ''
+        self.inputBox = interface.Input(surface)
 
     def update(self, pers):
         #Passing pers, and not persPlace, just for future extension
         intro = self.intro
         introIndex = self.introIndex
         musicOldName = self.musicOldName
+        bg = self.bg
+        text = self.text
 
         if pers.place[:5] == 'intro':
             intro = True
             place = pers.place[5:]
-            text = getattr(data, eval('place'))[introIndex]
             if introIndex < len(getattr(data, eval('place'))):
+                PLACE = 0
+                text = getattr(data, eval('place'))[introIndex]
+                bg = pg.image.load('Images/' + place + str(introIndex) + '.jpg')
                 introIndex += 1
             else:
                 introIndex = 0
-                intro = False
-            bg = pg.image.load('Images/' + place + str(introIndex-1) + '.jpg')
+                PLACE = next(item for item in data.place if item['Id'] == place)
         else:
             intro = False
             place = pers.place
@@ -107,6 +112,8 @@ class World():
         self.bg = bg
         self.intro = intro
         self.text = text
+        self.introIndex = introIndex
+        self.PLACE = PLACE
 
     def loop(self):
         surface = self.surface
@@ -114,6 +121,8 @@ class World():
         bg = self.bg
         message = self.message
         text = self.text
+        PLACE = self.PLACE
+        inputBox = self.inputBox
 
         clock = pg.time.Clock()
         x, dx = 0, 1
@@ -126,7 +135,10 @@ class World():
                     exit()
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_RETURN and intro == True:
-                        return
+                        if PLACE != 0:
+                            return (PLACE['Goto'], PLACE['Mobs'])
+                        else:
+                            return (0, 0)
             if intro == False:
                 e = inputBox.events(events)
                 if e != None:

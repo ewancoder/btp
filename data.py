@@ -2,15 +2,9 @@ valeMobs = {
     'Chance': 50
 }
 
+name = 'Ewan'
+
 begin = [
-    'lol',
-    'lol2'
-]
-
-class IntroText():
-
-    def __init__(self, name):
-        self.introtext2 = [
             'After all worlds has merged, all the Elvines has died, for they did not belong to a new world created by curious Elder One, they did not managed to bear their cause, to save world each from another apart. All, but for Lucifer who was exalted and was not anymore one of the Elvines.',
             'Even the Goddess was perished forewer, for pure Light essence could not live in new world',
             'Other races survived, but begun big survival fight between races and all kinds of creatures',
@@ -21,7 +15,7 @@ class IntroText():
             'One old man with no name find the boy. He took him and taught to fight. He called him... [' + name + ']...'
         ]
 
-    introtext = [
+introtext = [
         'Long before the Age of Heroes, when there was nothing but the essence of the pure Light, 6 worlds have been created by the hand of the Goddess Liana.',
         'She divided them one from another, so one cannot reach another, not from mortal world.',
         'Six pure worlds there was. The first one and the most beautiful was for Elvines, pure Light essence creatures, who lived to serve Liana. The Sine, they called it.',
@@ -50,3 +44,5 @@ class IntroText():
 place = []
 place.append({'Id': 'World/OldManHouse', 'Text': 'This is the place where you\'ve been raised. Old man are now gone [COUNT TIME]. So you are decided to go off [CHANGEABLE BY TIME AND OTHER FACTORS].\nYou can go [out] or [upstairs]. Also you can check [chest] under the window.', 'Actions': ['out', 'upstairs', 'chest'], 'Goto': ['Big Vale', 'Small Vale', 'Chest'], 'Mobs': valeMobs})
 place.append({'Id': 'Big Vale', 'Text': 'There are smoke everywhere and big fire dance around the Great Fault\nYou can go [left] and [right]', 'Actions': ['left', 'right'], 'Goto': ['Big Vale', 'Small Vale'], 'Mobs': valeMobs})
+
+place.append({'Id': 'begin', 'Text': 'texttext', 'Goto': 'World/OldManHouse', 'Mobs': valeMobs})
