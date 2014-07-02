@@ -31,15 +31,18 @@ def gameLoop(surface):
                 if not os.path.isdir('Saves'):
                     os.mkdir('Saves')
                 pers.save()
-#                screens.Introduction(surface, pers.name).loop()
             loaded = True
 
         worldScreen.update(pers)
         (place, mobs) = worldScreen.loop()
         if place != 0:
             pers.place = place
-        #if random.randrange(0, 100) < mobs['Chance']:
-        #    pers = screens.Battle().loop(surface, mobs, pers)
+        #Need try - because mobs could even not exist
+        try:
+            if random.randrange(0, 100) < mobs['Chance']:
+                pers = screens.Battle().loop(surface, mobs, pers)
+        except:
+            pass
         pers.save()
 
 if __name__ == '__main__':
