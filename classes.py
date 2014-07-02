@@ -22,12 +22,14 @@ class Pers():
     def save(self):
         with open('Saves/' + self.name, 'wb') as f:
             pickle.dump(self, f)
-            print('Game saved as ' + self.name)
+        print('Game saved as ' + self.name)
+        return self
 
     def load(self):
         with open('Saves/' + self.name, 'rb') as f:
             self = pickle.load(f)
-            print('Game loaded as ' + self.name)
+        print('Game loaded as ' + self.name)
+        return self
 
 #class Mob():
 #    maxhp = 20

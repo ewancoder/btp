@@ -15,22 +15,24 @@ SIZE = (1000, 700)
 
 def gameLoop(surface):
     pers = classes.Pers()
+    mainScreen = screens.Menu(surface)
+    loginScreen = screens.Login(surface)
     worldScreen = screens.World(surface)
+    battleScreen = screens.Battle(surface)
 
     while True:
         while pers.name == '':
             loaded = False
-            mainScreen = screens.Menu(surface).loop()
-            if mainScreen == 'login':
-                pers.name = screens.Login(surface).loop()
+            if mainScreen.loop() == 'login':
+                pers.name = loginScreen.loop()
 
         if not loaded:
             if os.path.isfile('Saves/' + pers.name):
-                pers.load()
+                pers = pers.load()
             else:
                 if not os.path.isdir('Saves'):
                     os.mkdir('Saves')
-                pers.save()
+                pers = pers.save()
             loaded = True
 
         worldScreen.update(pers)
@@ -40,7 +42,7 @@ def gameLoop(surface):
         #Need try - because mobs could even not exist
         try:
             if random.randrange(0, 100) < mobs['Chance']:
-                pers = screens.Battle().loop(surface, mobs, pers)
+                pers = battleScreen.loop(mobs, pers)
         except:
             pass
         pers.save()

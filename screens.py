@@ -18,8 +18,6 @@ class Menu():
     ret = ''
     
     def __init__(self, surface):
-        self.surface = surface
-
         MAIN_MENU = (
             ['Start / Load Game', lambda: setattr(self, 'ret', 'login')],
             ['Settings', lambda: setattr(self.menu, 'now', 1)],
@@ -34,6 +32,7 @@ class Menu():
             SETTINGS_MENU
         )
 
+        self.surface = surface
         self.menu = interface.Menu(MENU)
 
     def loop(self):
@@ -210,7 +209,10 @@ class World():
 
 #Whole battle screen with lots of skill-buttons and input for typing
 class Battle():
-    def loop(self, surface, mobs, pers):
+    def __init__(self, surface):
+        print('lol')
+
+    def loop(self, mobs, pers):
         mob = classes.Mob()
         battleInput = interface.Input(surface)
         clock = pg.time.Clock()
