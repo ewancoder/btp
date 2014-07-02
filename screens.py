@@ -10,7 +10,6 @@ import interface
 
 #Whole menu main screen
 class Menu():
-
     BG = pg.image.load('Images/background.jpg')
     MENU_MUSIC = pg.mixer.Sound('Music/menu.ogg')
 
@@ -35,37 +34,29 @@ class Menu():
         self.menu = interface.Menu(MENU)
 
     def loop(self):
-        BG = self.BG
-        MENU_MUSIC = self.MENU_MUSIC
-        menu = self.menu
-        ret = self.ret  #NEED TO REPEAT IT EACH FRAME
-        #FUCK. SUPPOSEDLY I'm going to start using just self.everywhere
-        surface = self.surface
-
         clock = pg.time.Clock()
         x, dx = 0, 1
 
         while True:
             clock.tick(30)
-            ret = self.ret
-            if ret != '':
-                return ret
+            if self.ret != '':
+                return self.ret
 
             events = pg.event.get()
             for e in events:
                 if e.type == pg.QUIT:
                     quit()
-            menu.events(events)
+            self.menu.events(events)
 
             if not pg.mixer.get_busy():
-                MENU_MUSIC.play(-1)
+                self.MENU_MUSIC.play(-1)
             x += dx
-            if x > BG.get_size()[0] - surface.get_size()[0] or x <= 0:
+            if x > self.BG.get_size()[0] - self.surface.get_size()[0] or x <= 0:
                 dx *= -1
 
-            surface.fill(0)
-            surface.blit(BG, (-x, 0))
-            menu.draw(surface)
+            self.surface.fill(0)
+            self.surface.blit(self.BG, (-x, 0))
+            self.menu.draw(self.surface)
 
             pg.display.flip()
 
@@ -132,55 +123,37 @@ class World():
         self.text = ''
         self.inputBox = interface.Input(surface)
 
+    #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
-        #Passing pers, and not persPlace, just for future extension
-        intro = self.intro
-        introIndex = self.introIndex
-        musicOldName = self.musicOldName
-        bg = self.bg
-        text = self.text
-
         if pers.place[:5] == 'intro':
-            intro = True
+            self.intro = True
             place = pers.place[5:]
-            if introIndex < len(getattr(data, eval('place'))):
+            if self.introIndex < len(getattr(data, eval('place'))):
                 PLACE = 0
-                text = getattr(data, eval('place'))[introIndex]
-                bg = pg.image.load('Images/' + place + str(introIndex) + '.jpg')
-                introIndex += 1
+                self.text = getattr(data, eval('place'))[self.introIndex]
+                self.bg = pg.image.load('Images/' + place + str(self.introIndex) + '.jpg')
+                self.introIndex += 1
             else:
-                introIndex = 0
+                self.introIndex = 0
                 PLACE = next(item for item in data.place if item['Id'] == place)
         else:
-            intro = False
+            self.intro = False
             place = pers.place
             PLACE = next(item for item in data.place if item['Id'] == place)
-            text = PLACE['Text']
-            bg = pg.image.load('Images/' + place + '.jpg')
+            self.text = PLACE['Text']
+            self.bg = pg.image.load('Images/' + place + '.jpg')
 
         musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
-        if musicOldName != musicName:
-            musicOldName = musicName
+        if self.musicOldName != musicName:
+            self.musicOldName = musicName
             music = pg.mixer.Sound('Music/' + musicName + '.ogg')
             if pg.mixer.get_busy():
                 pg.mixer.stop()
             music.play()
 
-        self.bg = bg
-        self.intro = intro
-        self.text = text
-        self.introIndex = introIndex
         self.PLACE = PLACE
 
     def loop(self):
-        surface = self.surface
-        intro = self.intro
-        bg = self.bg
-        message = self.message
-        text = self.text
-        PLACE = self.PLACE
-        inputBox = self.inputBox
-
         clock = pg.time.Clock()
         x, dx = 0, 1
 
@@ -191,26 +164,26 @@ class World():
                 if e.type == pg.QUIT:
                     exit()
                 if e.type == pg.KEYDOWN:
-                    if e.key == pg.K_RETURN and intro == True:
-                        if PLACE != 0:
-                            return (PLACE['Goto'], PLACE['Mobs'])
+                    if e.key == pg.K_RETURN and self.intro == True:
+                        if self.PLACE != 0:
+                            return (self.PLACE['Goto'], self.PLACE['Mobs'])
                         else:
                             return (0, 0)
-            if intro == False:
-                e = inputBox.events(events)
+            if self.intro == False:
+                e = self.inputBox.events(events)
                 if e != None:
-                    if e in PLACE['Actions']:
-                        return (PLACE['Goto'][PLACE['Actions'].index(e)], PLACE['Mobs'])
+                    if e in self.PLACE['Actions']:
+                        return (self.PLACE['Goto'][self.PLACE['Actions'].index(e)], self.PLACE['Mobs'])
 
-            surface.fill(0)
-            surface.blit(bg, (-x,0))
+            self.surface.fill(0)
+            self.surface.blit(self.bg, (-x,0))
             x += dx
-            if x > (bg.get_size()[0] - surface.get_size()[0]) / 2:
+            if x > (self.bg.get_size()[0] - self.surface.get_size()[0]) / 2:
                 dx = 0
 
-            message.draw(text, surface)
-            if intro == False:
-                inputBox.draw(surface)
+            self.message.draw(self.text, self.surface)
+            if self.intro == False:
+                self.inputBox.draw(self.surface)
 
             pg.display.flip()
 
