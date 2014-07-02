@@ -18,6 +18,7 @@ class Menu():
     ret = ''
     
     def __init__(self, surface):
+        self.surface = surface
         MAIN_MENU = (
             ['Start / Load Game', lambda: setattr(self, 'ret', 'login')],
             ['Settings', lambda: setattr(self.menu, 'now', 1)],
@@ -31,34 +32,40 @@ class Menu():
             MAIN_MENU,
             SETTINGS_MENU
         )
-
-        self.surface = surface
         self.menu = interface.Menu(MENU)
 
     def loop(self):
+        BG = self.BG
+        MENU_MUSIC = self.MENU_MUSIC
+        menu = self.menu
+        ret = self.ret  #NEED TO REPEAT IT EACH FRAME
+        #FUCK. SUPPOSEDLY I'm going to start using just self.everywhere
+        surface = self.surface
+
         clock = pg.time.Clock()
         x, dx = 0, 1
 
         while True:
             clock.tick(30)
-            if self.ret != '':
-                return self.ret
+            ret = self.ret
+            if ret != '':
+                return ret
 
             events = pg.event.get()
             for e in events:
                 if e.type == pg.QUIT:
                     quit()
-            self.menu.events(events)
+            menu.events(events)
 
             if not pg.mixer.get_busy():
-                self.MENU_MUSIC.play(-1)
+                MENU_MUSIC.play(-1)
             x += dx
-            if x > self.BG.get_size()[0] - self.surface.get_size()[0] or x <= 0:
+            if x > BG.get_size()[0] - surface.get_size()[0] or x <= 0:
                 dx *= -1
 
-            self.surface.fill(0)
-            self.surface.blit(self.BG, (-x, 0))
-            self.menu.draw(self.surface)
+            surface.fill(0)
+            surface.blit(BG, (-x, 0))
+            menu.draw(surface)
 
             pg.display.flip()
 
@@ -210,7 +217,7 @@ class World():
 #Whole battle screen with lots of skill-buttons and input for typing
 class Battle():
     def __init__(self, surface):
-        print('lol')
+        lol = ''
 
     def loop(self, mobs, pers):
         mob = classes.Mob()
