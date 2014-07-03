@@ -103,6 +103,7 @@ class Login():
 #Whole world screen - picture, input field
 class World():
     def __init__(self, surface):
+        self.data = data.Data()
         self.intro = False
         self.introIndex = 0
         self.message = interface.Message(surface)
@@ -114,21 +115,22 @@ class World():
 
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
+        self.data.update(pers)
         if pers.place[:5] == 'intro':
             self.intro = True
             place = pers.place[5:]
-            if self.introIndex < len(getattr(data, eval('place'))):
+            if self.introIndex < len(getattr(self.data, eval('place'))):
                 PLACE = 0
-                self.text = getattr(data, eval('place'))[self.introIndex]
+                self.text = getattr(self.data, eval('place'))[self.introIndex]
                 self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
                 self.introIndex += 1
             else:
                 self.introIndex = 0
-                PLACE = next(item for item in data.place if item['Id'] == place)
+                PLACE = next(item for item in self.data.place if item['Id'] == pers.place)
         else:
             self.intro = False
             place = pers.place
-            PLACE = next(item for item in data.place if item['Id'] == place)
+            PLACE = next(item for item in self.data.place if item['Id'] == place)
             self.text = PLACE['Text']
             self.bg = pg.image.load('Images/' + place + '.jpg')
 
@@ -155,14 +157,13 @@ class World():
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_RETURN and self.intro == True:
                         if self.PLACE != 0:
-                            return (self.PLACE['Goto'], self.PLACE['Mobs'])
+                            return self.PLACE['Goto'], None
                         else:
-                            return (0, 0)
+                            return None, None
             if self.intro == False:
                 e = self.inputBox.events(events)
-                if e != None:
-                    if e in self.PLACE['Actions']:
-                        return (self.PLACE['Goto'][self.PLACE['Actions'].index(e)], self.PLACE['Mobs'])
+                if e!= None and e in self.PLACE['Actions']:
+                    return (self.PLACE['Goto'][self.PLACE['Actions'].index(e)], self.PLACE['Mobs'])
 
             self.surface.fill(0)
             self.surface.blit(self.bg, (-x,0))

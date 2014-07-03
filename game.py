@@ -36,13 +36,15 @@ def gameLoop(surface):
             loaded = True
 
         worldScreen.update(pers)
-        (place, mobs) = worldScreen.loop()
-        if place != 0:
+        place, mobs = worldScreen.loop()
+        if place != None:
+            pers.place = place
+        else:
             pers.place = place
         #Need try - because mobs could even not exist
         try:
-            if random.randrange(0, 100) < mobs['Chance']:
-                pers = battleScreen.loop(mobs, pers)
+            if random.randrange(0, 100) < PLACE['Mobs']['Chance']:
+                pers = battleScreen.loop(PLACE['Mobs']['Chance'], pers)
         except:
             pass
         pers.save()

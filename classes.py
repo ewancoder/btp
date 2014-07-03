@@ -6,12 +6,15 @@ class Pers():
     #If name is '' - show main menu screen
     name = ''
     #Unique ID of the place which is loaded by World class
-    place = 'introbegin'
+    place = 'introIntroduction'
 
     #Characteristics
     experience = 0
     level = 1
     maxhp = 20
+
+    #The time
+    time = 0
 
     #Dynamic characteristics
     hp = maxhp
