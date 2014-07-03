@@ -3,12 +3,12 @@
 import pygame as pg
 
 class Menu():
-
     #===== CONSTANTS =====
     X, Y = 10, 10
     DCOLOR, HCOLOR = (200, 200, 100), (200, 100, 100)
     FONT = pg.font.Font('Fonts/rpg.ttf', 40)
     SELECT_SOUND = pg.mixer.Sound('Sounds/select.ogg')
+    SWITCH_SOUND = pg.mixer.Sound('Sounds/switch.ogg')
     
     #===== VARIABLES =====
     selected = 0    #Index of selected menu item
@@ -20,9 +20,6 @@ class Menu():
         self.update()
 
     def update(self):
-        #KOSTYL FOR 0 - no needed anymore
-        #if self.now == -1:
-        #    self.now = 0
         self.selected = 0
         self.items = [{'Label': i[0], 'Action': i[1]} for i in self.ITEMS[self.now]]
 
@@ -30,9 +27,9 @@ class Menu():
         offset = 0 #Incremental variable for making y-difference
         for index, i in enumerate(self.items):
             if self.selected == index:
-                color = self.DCOLOR
-            else:
                 color = self.HCOLOR
+            else:
+                color = self.DCOLOR
             text = self.FONT.render(i['Label'], True, color)
             surface.blit(text, (self.X, self.Y + offset))
             offset += self.FONT.get_height()
@@ -43,9 +40,11 @@ class Menu():
                 if e.key == pg.K_DOWN or e.key == pg.K_j or e.key == pg.K_s:
                     if self.selected < len(self.items) - 1:
                         self.selected += 1
+                        self.SWITCH_SOUND.play()
                 elif e.key == pg.K_UP or e.key == pg.K_k or e.key == pg.K_w:
                     if self.selected > 0:
                         self.selected -= 1
+                        self.SWITCH_SOUND.play()
                 elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
                     self.SELECT_SOUND.play()
                     self.items[self.selected]['Action']()

@@ -10,7 +10,7 @@ import interface
 
 #Whole menu main screen
 class Menu():
-    BG = pg.image.load('Images/background.jpg')
+    BG = pg.image.load('Images/menu.jpg')
     MENU_MUSIC = pg.mixer.Sound('Music/menu.ogg')
 
     #Returns its value (exits Menu) if not ''
@@ -64,7 +64,6 @@ class Menu():
 class Login():
     def __init__(self, surface):
         self.surface = surface
-
         self.message = interface.Message(surface)
         self.parchment = interface.Parchment(surface)
         self.text = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
@@ -74,23 +73,16 @@ class Login():
         clock = pg.time.Clock()
         x, dx = 0, 1
         intro = False
-        step = 0 #If step = 1 - Return is pressed
 
         while True:
             clock.tick(30)
             events = pg.event.get()
-            for event in events:
-                if event.type == pg.QUIT:
+            for e in events:
+                if e.type == pg.QUIT:
                     return
-                #if event.type == pg.KEYDOWN and event.key == pg.K_RETURN and step == 1:
-                #    if intro:
-                #        Screens().introduction(surface, name)
-                #    return name
 
-            ievent = self.parchment.events(events) #inputEvent
-            if ievent != None:
-                name = ievent
-                #step = 1
+            name = self.parchment.events(events) #inputEvent
+            if name != None:
                 if os.path.isfile('Saves/' + name):
                     self.text = 'I see, you\'re back, ' + name + '. Well, then you will continue your journew from where you have started... I must leave you now. Good luck!\nPress [RETURN]'
                 else:
@@ -101,13 +93,10 @@ class Login():
             self.surface.fill(0)
             self.surface.blit(self.bg, (-x,0))
             x += dx
-            #Move background image
             if x > (self.bg.get_size()[0] - self.surface.get_size()[0]) / 2:
                 dx = 0
-
             self.message.draw(self.text, self.surface)
-            if step == 0:
-                self.parchment.draw(self.surface)
+            self.parchment.draw(self.surface)
 
             pg.display.flip()
 
@@ -131,7 +120,7 @@ class World():
             if self.introIndex < len(getattr(data, eval('place'))):
                 PLACE = 0
                 self.text = getattr(data, eval('place'))[self.introIndex]
-                self.bg = pg.image.load('Images/' + place + str(self.introIndex) + '.jpg')
+                self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
                 self.introIndex += 1
             else:
                 self.introIndex = 0
