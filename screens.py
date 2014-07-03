@@ -120,18 +120,19 @@ class World():
             self.intro = True
             place = pers.place[5:]
             if self.introIndex < len(getattr(self.data, eval('place'))):
-                PLACE = 0
+                self.PLACE = 0
                 self.text = getattr(self.data, eval('place'))[self.introIndex]
                 self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
                 self.introIndex += 1
             else:
                 self.introIndex = 0
-                PLACE = next(item for item in self.data.place if item['Id'] == pers.place)
+                self.PLACE = next(item for item in self.data.place if item['Id'] == pers.place)
         else:
+            pers.time += 10
             self.intro = False
             place = pers.place
-            PLACE = next(item for item in self.data.place if item['Id'] == place)
-            self.text = PLACE['Text']
+            self.PLACE = next(item for item in self.data.place if item['Id'] == place)
+            self.text = self.PLACE['Text']
             self.bg = pg.image.load('Images/' + place + '.jpg')
 
         musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
@@ -141,8 +142,6 @@ class World():
             if pg.mixer.get_busy():
                 pg.mixer.stop()
             music.play()
-
-        self.PLACE = PLACE
 
     def loop(self):
         clock = pg.time.Clock()
@@ -157,13 +156,14 @@ class World():
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_RETURN and self.intro == True:
                         if self.PLACE != 0:
-                            return self.PLACE['Goto'], None
+#                            return self.PLACE['Goto'], None
+                            return self.PLACE
                         else:
                             return None, None
             if self.intro == False:
                 e = self.inputBox.events(events)
-                if e!= None and e in self.PLACE['Actions']:
-                    return (self.PLACE['Goto'][self.PLACE['Actions'].index(e)], self.PLACE['Mobs'])
+                if e!= None and e in self.PLACE['Move']:
+                    return (self.PLACE['Goto'][self.PLACE['Move'].index(e)], self.PLACE['Mobs'])
 
             self.surface.fill(0)
             self.surface.blit(self.bg, (-x,0))

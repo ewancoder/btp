@@ -21,7 +21,7 @@ class Data():
 
         self.place.append({
             'Id': 'House/OldManHouse',
-            'Text': 'This is the place where you\'ve been raised. Old man are now gone for a {0} days. So you are decided to go off [CHANGEABLE BY TIME AND OTHER FACTORS].\nYou can go [out] or [upstairs]. Also you can check [chest] under the window.'.format(pers.time),
+            'Text': 'This is the place where you\'ve been raised. Old man are now gone for a ' + str(20 + (pers.time / (24 * 60))) + ' days. So you are decided to go off [CHANGEABLE BY TIME AND OTHER FACTORS].\nYou can go [out] or [upstairs]. Also you can check [chest] under the window.',
             'Desc': ['Go out onto the streets', 'Go up onto the second floor'],
             'Move': ['out', 'upstairs'],
             'Goto': ['Village/OldManHouse', 'House/OldManHouseUpstairs']
