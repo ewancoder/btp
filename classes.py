@@ -13,14 +13,20 @@ class Pers():
     level = 1
     maxhp = 20
 
-    #The time
-    time = 0
-
     #Dynamic characteristics
     hp = maxhp
 
+    #The time (in minutes, +10 per turn)
+    time = 0
+
     #Statistics
     strokes = 0
+
+    #All kind of items, even money
+    items = [
+        '_2_PocketKnife',
+        '_10_Gold'
+    ]
 
     def save(self):
         with open('Saves/' + self.name, 'wb') as f:
