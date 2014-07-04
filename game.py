@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#BTP, Ewancoder, 2014
 
 import os
 import random
@@ -15,7 +16,7 @@ SIZE = (1000, 700)
 
 def gameLoop(surface):
     pers = classes.Pers()
-    mainScreen = screens.Menu(surface)
+    menuScreen = screens.Menu(surface)
     loginScreen = screens.Login(surface)
     worldScreen = screens.World(surface)
     battleScreen = screens.Battle(surface)
@@ -23,7 +24,7 @@ def gameLoop(surface):
     while True:
         while pers.name == '':
             loaded = False
-            if mainScreen.loop() == 'login':
+            if menuScreen.loop() == 'login':
                 pers.name = loginScreen.loop()
 
         if not loaded:
@@ -36,17 +37,15 @@ def gameLoop(surface):
             loaded = True
 
         worldScreen.update(pers)
-#        place, mobs = worldScreen.loop()
-        PLACE = worldScreen.loop()
-        if PLACE != (None,None):
-            print(PLACE['Goto'])
-            pers.place = PLACE['Goto']
+        PLACE, move = worldScreen.loop()
+        if PLACE != None:
+            pers.place = PLACE['Goto'] if  move == None else move
         else:
             pass
         #Need try - because mobs could even not exist
         try:
             if random.randrange(0, 100) < PLACE['Mobs']['Chance']:
-                pers = battleScreen.loop(PLACE['Mobs']['Chance'], pers)
+                pers = battleScreen.loop(PLACE, pers)
         except:
             pass
         pers.save()

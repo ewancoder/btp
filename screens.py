@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 
 import pygame as pg
@@ -8,10 +6,9 @@ import classes
 import data
 import interface
 
-#Whole menu main screen
 class Menu():
     BG = pg.image.load('Images/menu.jpg')
-    MENU_MUSIC = pg.mixer.Sound('Music/menu.ogg')
+    MUSIC = pg.mixer.Sound('Music/menu.ogg')
 
     #Returns its value (exits Menu) if not ''
     ret = ''
@@ -49,7 +46,7 @@ class Menu():
             self.menu.events(events)
 
             if not pg.mixer.get_busy():
-                self.MENU_MUSIC.play(-1)
+                self.MUSIC.play(-1)
             x += dx
             if x > self.BG.get_size()[0] - self.surface.get_size()[0] or x <= 0:
                 dx *= -1
@@ -60,19 +57,17 @@ class Menu():
 
             pg.display.flip()
 
-#Login screen (parchment + input field)
 class Login():
     def __init__(self, surface):
         self.surface = surface
         self.message = interface.Message(surface)
-        self.parchment = interface.Parchment(surface)
+        self.parchment = interface.Input(surface)
         self.text = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
         self.bg = pg.image.load('Images/login.jpg')
 
     def loop(self):
         clock = pg.time.Clock()
         x, dx = 0, 1
-        intro = False
 
         while True:
             clock.tick(30)
@@ -82,12 +77,11 @@ class Login():
                     return
 
             name = self.parchment.events(events) #inputEvent
-            if name != None:
+            if name not in (None, ''):
                 if os.path.isfile('Saves/' + name):
                     self.text = 'I see, you\'re back, ' + name + '. Well, then you will continue your journew from where you have started... I must leave you now. Good luck!\nPress [RETURN]'
                 else:
                     self.text = 'Greetings, sir ' + name + '. I will tell you a story of this world, then you can try to survive by yourself\nPress [RETURN]'
-                    intro = True
                 return name
 
             self.surface.fill(0)
@@ -123,10 +117,11 @@ class World():
                 self.PLACE = 0
                 self.text = getattr(self.data, eval('place'))[self.introIndex]
                 self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
-                self.introIndex += 1
-            else:
-                self.introIndex = 0
-                self.PLACE = next(item for item in self.data.place if item['Id'] == pers.place)
+                if self.introIndex+1 < len(getattr(self.data, eval('place'))):
+                    self.introIndex += 1
+                else:
+                    self.introIndex = 0
+                    self.PLACE = next(item for item in self.data.place if item['Id'] == pers.place)
         else:
             pers.time += 10
             self.intro = False
@@ -157,13 +152,14 @@ class World():
                     if e.key == pg.K_RETURN and self.intro == True:
                         if self.PLACE != 0:
 #                            return self.PLACE['Goto'], None
-                            return self.PLACE
+                            return self.PLACE, None
                         else:
                             return None, None
             if self.intro == False:
                 e = self.inputBox.events(events)
                 if e!= None and e in self.PLACE['Move']:
-                    return (self.PLACE['Goto'][self.PLACE['Move'].index(e)], self.PLACE['Mobs'])
+                    return self.PLACE, self.PLACE['Goto'][self.PLACE['Move'].index(e)]
+#                    return (self.PLACE['Goto'][self.PLACE['Move'].index(e)], self.PLACE['Mobs'])
 
             self.surface.fill(0)
             self.surface.blit(self.bg, (-x,0))
