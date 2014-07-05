@@ -178,6 +178,7 @@ class Battle():
     def __init__(self, surface):
         self.surface = surface
         self.battleInput = interface.Input(self.surface)
+        self.battleText = interface.Message(self.surface)
 
     def loop(self, mobs, pers):
         clock = pg.time.Clock()
@@ -186,6 +187,7 @@ class Battle():
         while True:
             clock.tick(30)
             self.battleInput.draw(self.surface)
+            self.battleText.draw(surface)
 
             for e in pg.event.get():
                 if e.type == pg.QUIT:
