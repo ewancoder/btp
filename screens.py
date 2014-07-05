@@ -78,10 +78,10 @@ class Login():
 
             name = self.parchment.events(events) #inputEvent
             if name not in (None, ''):
-                if os.path.isfile('Saves/' + name):
-                    self.text = 'I see, you\'re back, ' + name + '. Well, then you will continue your journew from where you have started... I must leave you now. Good luck!\nPress [RETURN]'
-                else:
-                    self.text = 'Greetings, sir ' + name + '. I will tell you a story of this world, then you can try to survive by yourself\nPress [RETURN]'
+#                if os.path.isfile('Saves/' + name):
+#                    self.text = 'I see, you\'re back, ' + name + '. Well, then you will continue your journew from where you have started... I must leave you now. Good luck!\nPress [RETURN]'
+#                else:
+#                    self.text = 'Greetings, sir ' + name + '. I will tell you a story of this world, then you can try to survive by yourself\nPress [RETURN]'
                 return name
 
             self.surface.fill(0)
@@ -122,6 +122,7 @@ class World():
                 else:
                     self.introIndex = 0
                     self.PLACE = next(item for item in self.data.place if item['Id'] == pers.place)
+            musicName = place
         else:
             pers.time += 10
             self.intro = False
@@ -129,8 +130,7 @@ class World():
             self.PLACE = next(item for item in self.data.place if item['Id'] == place)
             self.text = self.PLACE['Text']
             self.bg = pg.image.load('Images/' + place + '.jpg')
-
-        musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
+            musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
         if self.musicOldName != musicName:
             self.musicOldName = musicName
             music = pg.mixer.Sound('Music/' + musicName + '.ogg')
@@ -176,14 +176,18 @@ class World():
 #Whole battle screen with lots of skill-buttons and input for typing
 class Battle():
     def __init__(self, surface):
-        lol = ''
+        self.surface = surface
+        self.battleInput = interface.Input(self.surface)
 
     def loop(self, mobs, pers):
-        mob = classes.Mob()
-        battleInput = interface.Input(surface)
         clock = pg.time.Clock()
+        mob = classes.Mob()
+
         while True:
             clock.tick(30)
-            battleInput.draw(surface)
+            self.battleInput.draw(self.surface)
 
-        return pers
+            for e in pg.event.get():
+                if e.type == pg.QUIT:
+                    #quit()
+                    return pers

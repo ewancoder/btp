@@ -24,11 +24,12 @@ class Data():
             'Text': 'lanerismololothisshouldstraightenourfontslolThisis the place where you\'ve been raised. Old man are now gone for a ' + str(20 + (pers.time / (24 * 60))) + ' days. So you are decided to go off [CHANGEABLE BY TIME AND OTHER FACTORS].\nYou can go [out] or [upstairs]. Also you can check [chest] under the window.',
             'Desc': ['Go out onto the streets', 'Go up onto the second floor'],
             'Move': ['out', 'upstairs'],
-            'Goto': ['Village/OldManHouse', 'House/OldManHouseUpstairs']
+            'Goto': ['Village/OldManHouse', 'House/OldManHouseUpstairs'],
+            'Mobs': {'Chance': 50}
         })
 
         self.chest.append({
-            'Id': 'OldManHouse',
+            'Id': 'Village/OldManHouse',
             'Items': [
                 'Pocket knife',
                 '_80_Gold',
@@ -41,8 +42,6 @@ class Data():
             'Id': 'Village/OldManHouse',
             'Text': 'Your old home standing here, lurching in dappled shadows of pale ivy leaves. Here you\'ve been raised, here you\'ve been taught. Brooding memories filling your brain.',
             'Desc': ['Go into the old man\s house', 'Go to the center of the village', 'Go to west towards the gates'],
-            'Move': ['go in', 'go to center', 'go to west'],
-            'Goto': ['House/OldManHouse', 'Village/PaleVillageCenter', 'Village/PaleVillageWest']
+            'Move': ['in', 'go to center', 'go to west'],
+            'Goto': ['House/OldManHouse', 'Village/PaleVillageCenter', 'Village/PaleVillageWest'],
         })
-
-        #'Mobs': {'Chance': 50}

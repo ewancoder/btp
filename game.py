@@ -40,14 +40,12 @@ def gameLoop(surface):
         PLACE, move = worldScreen.loop()
         if PLACE != None:
             pers.place = PLACE['Goto'] if  move == None else move
+            if 'Mobs' in PLACE.keys():
+                if random.randrange(0, 100) < PLACE['Mobs']['Chance']:
+                    pers = battleScreen.loop(PLACE, pers)
         else:
             pass
         #Need try - because mobs could even not exist
-        try:
-            if random.randrange(0, 100) < PLACE['Mobs']['Chance']:
-                pers = battleScreen.loop(PLACE, pers)
-        except:
-            pass
         pers.save()
 
 if __name__ == '__main__':

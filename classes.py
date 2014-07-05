@@ -40,9 +40,9 @@ class Pers():
         print('Game loaded as ' + self.name)
         return self
 
-#class Mob():
-#    maxhp = 20
-#    hp = maxhp
+class Mob():
+    maxhp = 20
+    hp = maxhp
 
 #class Quest():
 #    def __init__(name, description):
