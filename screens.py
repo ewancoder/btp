@@ -172,7 +172,7 @@ class Battle():
     def __init__(self, surface):
         self.surface = surface
         self.battleInput = interface.Input(self.surface)
-        self.battleText = interface.Message(self.surface)
+        self.battleText = interface.Word(self.surface)
 
     def loop(self, mobs, pers):
         clock = pg.time.Clock()
