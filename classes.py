@@ -48,5 +48,5 @@ class Mob():
     hp = maxhp
 
 #class Quest():
-#    def __init__(name, description):
-#        print('Class for quests')
+#    def __init__():
+#        pass

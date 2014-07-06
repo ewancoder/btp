@@ -103,11 +103,12 @@ class World():
 
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
+        self.pers = pers
         self.time = 0
-        self.data.update(pers)
-        if pers.place[:5] == 'intro':
+        self.data.update(self.pers)
+        if self.pers.place[:5] == 'intro':
             self.intro = True
-            place = pers.place[5:]
+            place = self.pers.place[5:]
             if self.introIndex < len(getattr(self.data, eval('place'))):
                 self.PLACE = None
                 self.text = getattr(self.data, eval('place'))[self.introIndex]
@@ -116,20 +117,16 @@ class World():
                     self.introIndex += 1
                 else:
                     self.introIndex = 0
-                    self.PLACE = next(item for item in self.data.place if item['Id'] == pers.place)
+                    self.PLACE = next(item for item in self.data.place if item['Id'] == self.pers.place)
             musicName = place
         else:
             self.intro = False
-            place = pers.place
+            place = self.pers.place
             self.PLACE = next(item for item in self.data.place if item['Id'] == place)
             self.bg = pg.image.load('Images/' + place + '.jpg')
             self.text = self.PLACE['Text']
             musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
             self.time += self.PLACE['Time'] if 'Time' in self.PLACE.keys() else 10
-  #          if 'Time' in self.PLACE.keys():
-  #              self.time += self.PLACE['Time']
-  #          else:
-  #              self.time += 10
 
         if self.musicOldName != musicName:
             self.musicOldName = musicName
@@ -155,10 +152,8 @@ class World():
                 e = self.inputBox.events(events)
                 if e!= None and e in self.PLACE['Move']:
                     move = next(item for item in self.data.place if item['Id'] == self.PLACE['Goto'][self.PLACE['Move'].index(e)])
-                    if 'Time' in move:
-                        self.time += move['Time']
-                    else:
-                        self.time += 10
+                    self.time += move['Time'] if 'Time' in move else 10
+                    self.pers.time += self.time
                     return self.PLACE, self.PLACE['Goto'][self.PLACE['Move'].index(e)]
 
             self.surface.fill(0)
