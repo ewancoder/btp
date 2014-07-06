@@ -186,8 +186,11 @@ class Battle():
 
         while True:
             clock.tick(30)
+            self.surface.fill(0)
             self.battleInput.draw(self.surface)
-            self.battleText.draw(surface)
+            self.battleText.draw('mesage', self.surface)
+
+            pg.display.flip()
 
             for e in pg.event.get():
                 if e.type == pg.QUIT:

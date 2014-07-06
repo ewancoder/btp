@@ -6,6 +6,7 @@ class Pers():
     #If name is '' - show main menu screen
     name = ''
     #Unique ID of the place which is loaded by World class
+    #If starts with 'intro' - load place[5:][0...len(place[5:])] consecutively just as a slideshow
     place = 'introIntroduction'
 
     #Characteristics
@@ -23,6 +24,8 @@ class Pers():
     strokes = 0
 
     #All kind of items, even money
+    #Starts with _ -> _number_ where 'number' is number of items
+    #Need to make somehow items attributes (.cost, .krit, .atk, .def...)
     items = [
         '_2_PocketKnife',
         '_10_Gold'
