@@ -94,9 +94,8 @@ class Message():
         surface.blit(self.wordwrap(text), (self.X, 10))
 
 class Input():
-    prompt = ''
-
     def __init__(self, surface):
+        self.prompt = ''
         self.FONT = pg.font.Font('Fonts/rpg.ttf', 50)
         self.WIDTH = surface.get_size()[0] / 1.2
         self.HEIGHT = surface.get_size()[1] / 8

@@ -9,9 +9,6 @@ import interface
 class Menu():
     BG = pg.image.load('Images/menu.jpg')
     MUSIC = pg.mixer.Sound('Music/menu.ogg')
-
-    #Returns its value (exits Menu) if not ''
-    ret = ''
     
     def __init__(self, surface):
         self.surface = surface
@@ -32,6 +29,8 @@ class Menu():
 
     def loop(self):
         clock = pg.time.Clock()
+        #Returns its value (exits Menu) if not ''
+        self.ret = ''
         x, dx = 0, 1
 
         while True:
@@ -58,15 +57,17 @@ class Menu():
             pg.display.flip()
 
 class Login():
+    TEXT = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
+    BG = pg.image.load('Images/login.jpg')
+
     def __init__(self, surface):
-        self.surface = surface
         self.message = interface.Message(surface)
         self.parchment = interface.Input(surface)
-        self.text = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
-        self.bg = pg.image.load('Images/login.jpg')
+        self.surface = surface
 
     def loop(self):
         clock = pg.time.Clock()
+        self.parchment.prompt = ''
         x, dx = 0, 1
 
         while True:
@@ -74,47 +75,41 @@ class Login():
             events = pg.event.get()
             for e in events:
                 if e.type == pg.QUIT:
-                    return
-
+                    quit()
+                elif e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
+                    return ''
             name = self.parchment.events(events) #inputEvent
             if name not in (None, ''):
-#                if os.path.isfile('Saves/' + name):
-#                    self.text = 'I see, you\'re back, ' + name + '. Well, then you will continue your journew from where you have started... I must leave you now. Good luck!\nPress [RETURN]'
-#                else:
-#                    self.text = 'Greetings, sir ' + name + '. I will tell you a story of this world, then you can try to survive by yourself\nPress [RETURN]'
                 return name
 
             self.surface.fill(0)
-            self.surface.blit(self.bg, (-x,0))
+            self.surface.blit(self.BG, (-x,0))
             x += dx
-            if x > (self.bg.get_size()[0] - self.surface.get_size()[0]) / 2:
+            if x > self.BG.get_size()[0] - self.surface.get_size()[0]:
                 dx = 0
-            self.message.draw(self.text, self.surface)
+            self.message.draw(self.TEXT, self.surface)
             self.parchment.draw(self.surface)
 
             pg.display.flip()
 
-#Whole world screen - picture, input field
 class World():
     def __init__(self, surface):
         self.data = data.Data()
-        self.intro = False
         self.introIndex = 0
-        self.message = interface.Message(surface)
         self.musicOldName = ''
         self.surface = surface
-        self.bg = '' #Because an error occur
-        self.text = ''
         self.inputBox = interface.Input(surface)
+        self.message = interface.Message(surface)
 
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
+        self.time = 0
         self.data.update(pers)
         if pers.place[:5] == 'intro':
             self.intro = True
             place = pers.place[5:]
             if self.introIndex < len(getattr(self.data, eval('place'))):
-                self.PLACE = 0
+                self.PLACE = None
                 self.text = getattr(self.data, eval('place'))[self.introIndex]
                 self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
                 if self.introIndex+1 < len(getattr(self.data, eval('place'))):
@@ -124,13 +119,18 @@ class World():
                     self.PLACE = next(item for item in self.data.place if item['Id'] == pers.place)
             musicName = place
         else:
-            pers.time += 10
             self.intro = False
             place = pers.place
             self.PLACE = next(item for item in self.data.place if item['Id'] == place)
-            self.text = self.PLACE['Text']
             self.bg = pg.image.load('Images/' + place + '.jpg')
+            self.text = self.PLACE['Text']
             musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
+            self.time += self.PLACE['Time'] if 'Time' in self.PLACE.keys() else 10
+  #          if 'Time' in self.PLACE.keys():
+  #              self.time += self.PLACE['Time']
+  #          else:
+  #              self.time += 10
+
         if self.musicOldName != musicName:
             self.musicOldName = musicName
             music = pg.mixer.Sound('Music/' + musicName + '.ogg')
@@ -150,21 +150,21 @@ class World():
                     exit()
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_RETURN and self.intro == True:
-                        if self.PLACE != 0:
-#                            return self.PLACE['Goto'], None
-                            return self.PLACE, None
-                        else:
-                            return None, None
+                        return self.PLACE, None
             if self.intro == False:
                 e = self.inputBox.events(events)
                 if e!= None and e in self.PLACE['Move']:
+                    move = next(item for item in self.data.place if item['Id'] == self.PLACE['Goto'][self.PLACE['Move'].index(e)])
+                    if 'Time' in move:
+                        self.time += move['Time']
+                    else:
+                        self.time += 10
                     return self.PLACE, self.PLACE['Goto'][self.PLACE['Move'].index(e)]
-#                    return (self.PLACE['Goto'][self.PLACE['Move'].index(e)], self.PLACE['Mobs'])
 
             self.surface.fill(0)
             self.surface.blit(self.bg, (-x,0))
             x += dx
-            if x > (self.bg.get_size()[0] - self.surface.get_size()[0]) / 2:
+            if x > self.bg.get_size()[0] - self.surface.get_size()[0]:
                 dx = 0
 
             self.message.draw(self.text, self.surface)
@@ -173,7 +173,6 @@ class World():
 
             pg.display.flip()
 
-#Whole battle screen with lots of skill-buttons and input for typing
 class Battle():
     def __init__(self, surface):
         self.surface = surface
@@ -188,11 +187,11 @@ class Battle():
             clock.tick(30)
             self.surface.fill(0)
             self.battleInput.draw(self.surface)
-            self.battleText.draw('mesage', self.surface)
+            self.battleText.draw('BattleTestWord', self.surface)
 
             pg.display.flip()
 
             for e in pg.event.get():
                 if e.type == pg.QUIT:
                     #quit()
-                    return pers
+                    return pers #Temporary for chances debugging
