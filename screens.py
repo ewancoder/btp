@@ -87,7 +87,7 @@ class Login():
             x += dx
             if x > self.BG.get_size()[0] - self.surface.get_size()[0]:
                 dx = 0
-            self.message.draw(self.TEXT, self.surface)
+            self.message.draw(self.TEXT)
             self.parchment.draw(self.surface)
 
             pg.display.flip()
@@ -162,7 +162,7 @@ class World():
             if x > self.bg.get_size()[0] - self.surface.get_size()[0]:
                 dx = 0
 
-            self.message.draw(self.text, self.surface)
+            self.message.draw(self.text)
             if self.intro == False:
                 self.inputBox.draw(self.surface)
 
@@ -182,7 +182,7 @@ class Battle():
             clock.tick(30)
             self.surface.fill(0)
             self.battleInput.draw(self.surface)
-            self.battleText.draw('BattleTestWord', self.surface)
+            self.battleText.draw('BattleTestWord')
 
             pg.display.flip()
 

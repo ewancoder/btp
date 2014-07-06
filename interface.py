@@ -34,12 +34,12 @@ class Menu():
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_DOWN or e.key == pg.K_j or e.key == pg.K_s:
                     if self.selected < len(self.items) - 1:
-                        self.selected += 1
                         self.SWITCH_SOUND.play()
+                        self.selected += 1
                 elif e.key == pg.K_UP or e.key == pg.K_k or e.key == pg.K_w:
                     if self.selected > 0:
-                        self.selected -= 1
                         self.SWITCH_SOUND.play()
+                        self.selected -= 1
                 elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
                     self.SELECT_SOUND.play()
                     self.items[self.selected]['Action']()
@@ -47,16 +47,17 @@ class Menu():
 
 class Message():
     def __init__(self, surface):
+        self.BG_COLOR = (0,0,0, 80)
+        self.TEXT_COLOR = (200,200,100)
         self.RECT = pg.Rect((0, 0, surface.get_size()[0] - 10*2, surface.get_size()[1] / 3))
         self.X = surface.get_size()[0] / 2 - self.RECT.width / 2
         self.setFontSize(24)
+        self.surface = surface
 
     def setFontSize(self, size):
         self.FONT = pg.font.Font('Fonts/comic.ttf', size)
 
     def wordwrap(self, text):
-        TEXT_COLOR = (200,200,100)
-        BG_COLOR = (0,0,0, 80)
         size = 20
 
         finallines = []
@@ -79,19 +80,19 @@ class Message():
             else:
                 finallines.append(line)
 
+        return finallines
+
+    def draw(self, finallines):
         surface = pg.Surface(self.RECT.size, pg.SRCALPHA, 32)
-        surface.fill(BG_COLOR)
+        surface.fill(self.BG_COLOR)
 
         height = 0
-        for line in finallines:
-            text = self.FONT.render(line, True, TEXT_COLOR)
+        for line in self.wordwrap(finallines):
+            text = self.FONT.render(line, True, self.TEXT_COLOR)
             surface.blit(text, ((self.RECT.width - text.get_width()) / 2, height))
             height += self.FONT.size(line)[1]
 
-        return surface
-
-    def draw(self, text, surface):
-        surface.blit(self.wordwrap(text), (self.X, 10))
+        self.surface.blit(surface, (self.X, 10))
 
 class Input():
     def __init__(self, surface):
