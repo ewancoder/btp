@@ -1,3 +1,7 @@
+words = [
+    'question', 'weather', 'earth', 'rueful', 'translate', 'yank', 'ugly', 'illegal', 'opensource', 'potato', 'automobile', 'surgery', 'dye', 'faceless', 'gather', 'hideous', 'jumper', 'knee', 'light', 'zdor', 'xor', 'complex', 'vegetable', 'brick', 'nest', 'modest'
+]
+
 class Data():
     def update(self, pers):
         self.chest = []
@@ -25,7 +29,7 @@ class Data():
             'Desc': ['Go out onto the streets', 'Go up onto the second floor'],
             'Move': ['out', 'upstairs'],
             'Goto': ['Village/OldManHouse', 'House/OldManHouseUpstairs'],
-            'Mobs': {'Chance': 50},
+            'Mobs': {'Chance': 100},
             'Time': 100000
         })
 

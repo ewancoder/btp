@@ -1,4 +1,5 @@
 import os
+import random
 
 import pygame as pg
 
@@ -171,22 +172,75 @@ class World():
 class Battle():
     def __init__(self, surface):
         self.surface = surface
-        self.battleInput = interface.Input(self.surface)
-        self.battleText = interface.Word(self.surface)
 
     def loop(self, mobs, pers):
         clock = pg.time.Clock()
         mob = classes.Mob()
+        self.started = False
+        prompt = ''
+        words, bwords = [], []
+        words.append(random.choice(data.words))
+        bwords.append(interface.Word(self.surface, words[-1]))
+
+        def updateWord():
+            if words[self.index].startswith(e.unicode):
+                words[self.index] = words[self.index][1:]
+                if words[self.index] == '':
+                    #UPDATE STATE OF BATTLE (hit monster + animate it)
+                    #Check whether all words is destroyed, if not - continue battle
+                    if True:
+                        bwords[self.index].word = words[self.index]
+                        #go to next word
+                        self.started = False
+                        self.index = None
+                    else:
+                        #if all words is destroyed, UPDATE state and + go out of battle
+                        pass
+                else:
+                    bwords[self.index].word = words[self.index]
+        
+        addword = pg.USEREVENT+1
+        pg.time.set_timer(addword, 1000)
+        self.index = None
 
         while True:
             clock.tick(30)
+
+            events = pg.event.get()
+            for e in events:
+                if e.type == pg.QUIT:
+                    quit()
+                if e.type == pg.KEYDOWN:
+                    if e.unicode.isalpha():
+                        if not self.started:
+                            for ind, word in enumerate(words):
+                                if word.startswith(e.unicode):
+                                    self.index = ind
+                                    break
+                            if self.index != None:
+                                bwords[self.index].highlight()
+                                self.started = True
+                                updateWord()
+                        else:
+                            updateWord()
+                if e.type == addword:
+                    #KOSTYL
+                    temp = 0
+                    while True:
+                        temp += 1
+                        go = True
+                        newWord = random.choice(data.words)
+                        for word in words:
+                            if word.startswith(newWord[:1]):
+                                go = False
+                        if go or temp == 100:
+                            temp = 0
+                            break
+                    words.append(newWord)
+                    bwords.append(interface.Word(self.surface, words[-1]))
+                            
             self.surface.fill(0)
-            self.battleInput.draw(self.surface)
-            self.battleText.draw('BattleTestWord')
+            for w in bwords:
+                w.draw()
 
             pg.display.flip()
-
-            for e in pg.event.get():
-                if e.type == pg.QUIT:
-                    #quit()
-                    return pers #Temporary for chances debugging
