@@ -180,37 +180,41 @@ class Notify():
         self.y -= 1
 
 class BattleStats():
-    def __init__(self, surface, char):
-        self.surface = surface
-        
+    def __init__(self, surface):
         self.FONT = pg.font.Font('Fonts/rpg.ttf', 50)
         tempWidth = 2.2
         self.WIDTH = surface.get_size()[0] / tempWidth
         self.HEIGHT = surface.get_size()[1] / 1.1
-        self.X1 = (tempWidth / 4 - 1/2) * self.WIDTH
-        self.X2 = (tempWidth / 4 * 3 - 1/2) * self.WIDTH
+        self.X = []
+        self.X.append((tempWidth / 4 - 1/2) * self.WIDTH)
+        self.X.append((tempWidth / 4 * 3 - 1/2) * self.WIDTH)
         self.Y = (surface.get_size()[1] - self.HEIGHT) / 1.3
-        self.surface1 = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
-        self.surface2 = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
+        self.surface = []
+        self.surface.append(pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA))
+        self.surface.append(pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA))
+        self.picture = []
+        self.picture.append(pg.image.load('Images/menu.jpg'))
+        self.picture.append(pg.image.load('Images/menu.jpg'))
 
     def draw(self, surface, pers, mob):
         color = (200,100,100)
-        self.surface1.fill((0,0,0, 120))
-        self.surface2.fill((0,0,0, 120))
-        text = self.FONT.render('HP: {0}/{1}'.format(int(pers.hp), int(pers.maxhp)), True, color)
-        self.surface1.blit(text, (20, 20))
-        text = self.FONT.render('HP: {0}/{1}'.format(int(mob.hp), int(mob.maxhp)), True, color)
-        self.surface2.blit(text, (20, 20))
-
-        left = pg.Surface((int(self.surface1.get_size()[0] * pers.hp / pers.maxhp), 30))
-        gauge = pg.Surface((int(self.surface1.get_size()[0] * (pers.maxhp - pers.hp) / pers.maxhp), 30))
-        left.set_alpha(100)
-        gauge.set_alpha(100)
-        left.fill((200,255,200))
-        gauge.fill((255,200,200))
-        self.surface1.blit(left, (0,0))
-        self.surface1.blit(gauge, (left.get_size()[0], 0))
-        pg.draw.rect(self.surface, (255,255,255), pg.Rect(0,0,gauge.get_size()[0]+left.get_size()[0],100), 1)
-
-        surface.blit(self.surface1, (self.X1, self.Y))
-        surface.blit(self.surface2, (self.X2, self.Y))
+        for i in range(2):
+            self.surface[i].fill((0,0,0, 120))
+            if i == 0:
+                text = self.FONT.render('HP: {0}/{1}'.format(int(pers.hp), int(pers.maxhp)), True, color)
+                left = pg.Surface((int(self.surface[i].get_size()[0] * pers.hp / pers.maxhp), 30))
+                gauge = pg.Surface((int(self.surface[i].get_size()[0] * (pers.maxhp - pers.hp) / pers.maxhp), 30))
+            else:
+                text = self.FONT.render('HP: {0}/{1}'.format(int(mob.hp), int(mob.maxhp)), True, color)
+                left = pg.Surface((int(self.surface[i].get_size()[0] * mob.hp / mob.maxhp), 30))
+                gauge = pg.Surface((int(self.surface[i].get_size()[0] * (mob.maxhp - mob.hp) / mob.maxhp), 30))
+            self.surface[i].blit(text, (20, 20))
+            left.set_alpha(100)
+            gauge.set_alpha(100)
+            left.fill((200,255,200))
+            gauge.fill((255,200,200))
+            self.surface[i].blit(left, (0,0))
+            self.surface[i].blit(gauge, (left.get_size()[0], 0))
+            self.surface[i].blit(self.picture[i], (50, 50))
+            pg.draw.rect(self.surface[i], (255,255,255), pg.Rect(0,0,gauge.get_size()[0]+left.get_size()[0],100), 1)
+            surface.blit(self.surface[i], (self.X[i], self.Y))
