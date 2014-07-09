@@ -126,20 +126,91 @@ class Input():
 
 class Word():
     def __init__(self, surface, word):
-        self.word = word
-        BG_COLOR = (0,0,0, 80)
-        self.TEXT_COLOR = (100,100,200)
+        self.BG_COLOR = (0,0,0, 80)
         self.FONT = pg.font.Font('Fonts/comic.ttf', 40)
-        self.surface = surface
-        self.y = -50
-        self.surface.fill(BG_COLOR)
-        self.RECT = pg.Rect((0, 0, self.FONT.size(word)[0], self.FONT.size(word)[1]))
-        self.x = random.randint(0, self.surface.get_size()[0] - self.RECT.width)
+        self.HI_COLOR = (200,100,100)
+        self.DEF_COLOR = (100,100,200)
 
-    def draw(self):
-        self.text = self.FONT.render(self.word, True, self.TEXT_COLOR)
-        self.surface.blit(self.text, (self.x, self.y))
-        self.y += 1
+        self.color = self.DEF_COLOR
+        self.surface = pg.Surface((self.FONT.size(word)[0], self.FONT.size(word)[1]), pg.SRCALPHA)
+        self.word = word
+        self.x = random.randint(0, surface.get_size()[0] - self.FONT.size(word)[0])
+        self.y = -50    #Out of the screen
+
+    def draw(self, speed, surface):
+        self.text = self.FONT.render(self.word, True, self.color)
+        self.surface.fill((self.BG_COLOR))
+        self.surface.blit(self.text, (0,0))
+        surface.blit(self.surface, (self.x, self.y))
+        self.y += speed
+        if self.y > surface.get_size()[1]:
+            return 'hit'
 
     def highlight(self):
-        self.TEXT_COLOR = (200,100,100)
+        self.color = self.HI_COLOR
+
+    def unhighlight(self):
+        self.color = self.DEF_COLOR
+
+class Notify():
+    def __init__(self, word, x, y, style='green'):
+        self.x = x
+        self.y = y
+        self.alpha = 255
+        self.FONT = pg.font.Font('Fonts/comic.ttf', 40)
+        self.word = str(word)
+        self.surface = pg.Surface((self.FONT.size(self.word)[0], self.FONT.size(self.word)[1]))
+        self.surface.set_alpha(150)
+        if style == 'green':
+            self.color = (100,200,100)
+        elif style == 'red':
+            self.color = (200,100,100)
+
+    def draw(self, surface):
+        if self.alpha > 0:
+            self.alpha -= 3
+            if self.alpha < 0:
+                self.alpha = 0
+        self.surface.set_alpha(self.alpha)
+        bg_color = (0,0,0, self.alpha)
+        self.text = self.FONT.render(self.word, True, self.color)
+        self.surface.fill((bg_color))
+        self.surface.blit(self.text, (0,0))
+        surface.blit(self.surface, (self.x, self.y))
+        self.y -= 1
+
+class BattleStats():
+    def __init__(self, surface, char):
+        self.surface = surface
+        
+        self.FONT = pg.font.Font('Fonts/rpg.ttf', 50)
+        tempWidth = 2.2
+        self.WIDTH = surface.get_size()[0] / tempWidth
+        self.HEIGHT = surface.get_size()[1] / 1.1
+        self.X1 = (tempWidth / 4 - 1/2) * self.WIDTH
+        self.X2 = (tempWidth / 4 * 3 - 1/2) * self.WIDTH
+        self.Y = (surface.get_size()[1] - self.HEIGHT) / 1.3
+        self.surface1 = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
+        self.surface2 = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
+
+    def draw(self, surface, pers, mob):
+        color = (200,100,100)
+        self.surface1.fill((0,0,0, 120))
+        self.surface2.fill((0,0,0, 120))
+        text = self.FONT.render('HP: {0}/{1}'.format(int(pers.hp), int(pers.maxhp)), True, color)
+        self.surface1.blit(text, (20, 20))
+        text = self.FONT.render('HP: {0}/{1}'.format(int(mob.hp), int(mob.maxhp)), True, color)
+        self.surface2.blit(text, (20, 20))
+
+        left = pg.Surface((int(self.surface1.get_size()[0] * pers.hp / pers.maxhp), 30))
+        gauge = pg.Surface((int(self.surface1.get_size()[0] * (pers.maxhp - pers.hp) / pers.maxhp), 30))
+        left.set_alpha(100)
+        gauge.set_alpha(100)
+        left.fill((200,255,200))
+        gauge.fill((255,200,200))
+        self.surface1.blit(left, (0,0))
+        self.surface1.blit(gauge, (left.get_size()[0], 0))
+        pg.draw.rect(self.surface, (255,255,255), pg.Rect(0,0,gauge.get_size()[0]+left.get_size()[0],100), 1)
+
+        surface.blit(self.surface1, (self.X1, self.Y))
+        surface.blit(self.surface2, (self.X2, self.Y))

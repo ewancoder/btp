@@ -13,6 +13,8 @@ class Pers():
     experience = 0
     level = 1
     maxhp = 20
+    maxhp = 200
+    atk = 4
 
     #Dynamic characteristics
     hp = maxhp
@@ -44,8 +46,15 @@ class Pers():
         return self
 
 class Mob():
-    maxhp = 20
-    hp = maxhp
+    def __init__(self, maxhp = 20, atk = 1):
+        self.maxhp = maxhp
+        self.hp = maxhp
+        self.atk = atk
+        self.name = 'Mysterious creature'
+
+class Skeleton(Mob):
+    def __init(self):
+        self.name = 'Skeleton'
 
 #class Quest():
 #    def __init__():

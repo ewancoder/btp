@@ -105,7 +105,7 @@ class World():
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
         self.pers = pers
-        self.time = 0
+        #self.time = 0
         self.data.update(self.pers)
         if self.pers.place[:5] == 'intro':
             self.intro = True
@@ -127,7 +127,7 @@ class World():
             self.bg = pg.image.load('Images/' + place + '.jpg')
             self.text = self.PLACE['Text']
             musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
-            self.time += self.PLACE['Time'] if 'Time' in self.PLACE.keys() else 10
+            #self.time += self.PLACE['Time'] if 'Time' in self.PLACE.keys() else 10
 
         if self.musicOldName != musicName:
             self.musicOldName = musicName
@@ -152,10 +152,12 @@ class World():
             if self.intro == False:
                 e = self.inputBox.events(events)
                 if e!= None and e in self.PLACE['Move']:
-                    move = next(item for item in self.data.place if item['Id'] == self.PLACE['Goto'][self.PLACE['Move'].index(e)])
-                    self.time += move['Time'] if 'Time' in move else 10
-                    self.pers.time += self.time
-                    return self.PLACE, self.PLACE['Goto'][self.PLACE['Move'].index(e)]
+                    moveIndex = self.PLACE['Move'].index(e)
+                    move = next(item for item in self.data.place if item['Id'] == self.PLACE['Goto'][moveIndex])
+                    self.pers.time += move['Time'][moveIndex] if 'Time' in move else 10
+                    moveto = self.PLACE['Goto'][self.PLACE['Move'].index(e)]
+                    newplace = next(item for item in self.data.place if item['Id'] == moveto)
+                    return newplace, moveto
 
             self.surface.fill(0)
             self.surface.blit(self.bg, (-x,0))
@@ -173,29 +175,41 @@ class Battle():
     def __init__(self, surface):
         self.surface = surface
 
-    def loop(self, mobs, pers):
+    def loop(self, pers):
+        self.bg = pg.image.load('Images/Battle/' + os.path.basename(os.path.dirname(pers.place)) + '.jpg')
+
         clock = pg.time.Clock()
         mob = classes.Mob()
+        d = data.Data()
+        d.update(pers)
         self.started = False
         prompt = ''
-        words, bwords = [], []
+        words, bwords, speed, notifications = [], [], [], []
         words.append(random.choice(data.words))
         bwords.append(interface.Word(self.surface, words[-1]))
+        try:
+            spd = next(item for item in d.place if item['Id'] == pers.place)['Mobs']['Speed']
+        except:
+            spd = 0
+        speed.append(spd)
+
+        self.stats = interface.BattleStats(self.surface)
 
         def updateWord():
             if words[self.index].startswith(e.unicode):
                 words[self.index] = words[self.index][1:]
                 if words[self.index] == '':
+                    persHit = random.randint(int((pers.atk - pers.atk / 3) * 1000), int((pers.atk + pers.atk / 3) * 1000)) / 1000
+                    persHit *= self.length / 10
+                    mob.hp -= persHit
                     #UPDATE STATE OF BATTLE (hit monster + animate it)
-                    #Check whether all words is destroyed, if not - continue battle
-                    if True:
-                        bwords[self.index].word = words[self.index]
-                        #go to next word
-                        self.started = False
-                        self.index = None
-                    else:
-                        #if all words is destroyed, UPDATE state and + go out of battle
-                        pass
+                    bwords[self.index].word = words[self.index]
+                    #go to next word
+                    self.started = False
+                    #It is the condition lol :D
+                    #words[self.index] = ''
+                    notifications.append(interface.Notify(persHit, bwords[self.index].x, bwords[self.index].y))
+                    self.index = None
                 else:
                     bwords[self.index].word = words[self.index]
         
@@ -203,7 +217,8 @@ class Battle():
         pg.time.set_timer(addword, 1000)
         self.index = None
 
-        while True:
+        mob.hp = mob.maxhp
+        while mob.hp > 0 and pers.hp > 0:
             clock.tick(30)
 
             events = pg.event.get()
@@ -218,13 +233,15 @@ class Battle():
                                     self.index = ind
                                     break
                             if self.index != None:
-                                bwords[self.index].highlight()
-                                self.started = True
-                                updateWord()
+                                if bwords[self.index].word.startswith(e.unicode):
+                                    bwords[self.index].highlight()
+                                    self.started = True
+                                    self.length = len(words[self.index])
+                                    updateWord()
                         else:
                             updateWord()
                 if e.type == addword:
-                    #KOSTYL
+                    #Horrible piece of shit
                     temp = 0
                     while True:
                         temp += 1
@@ -238,9 +255,36 @@ class Battle():
                             break
                     words.append(newWord)
                     bwords.append(interface.Word(self.surface, words[-1]))
-                            
+                    speed.append(spd)
+
             self.surface.fill(0)
-            for w in bwords:
-                w.draw()
+            self.surface.blit(self.bg, (0,0))
+
+            #NOTIFICATIONS
+            for n in notifications:
+                if n.y > -n.surface.get_size()[1]:
+                    n.draw(self.surface)
+                else:
+                    del n
+
+            #STATS
+            self.stats.draw(self.surface, pers, mob)
+
+            #WORDS
+            for ind, w in enumerate(bwords):
+                if words[ind] != '':
+                    if w.draw(speed[ind], self.surface) == 'hit':
+                        if self.started == True:
+                            self.index = None
+                            #go to next word
+                            self.started = False
+                            for ww in bwords:
+                                ww.unhighlight()
+                        words[ind] = ''
+                        mobHit = random.randint(int((mob.atk - mob.atk / 3) * 1000), int((mob.atk + mob.atk / 3) * 1000)) / 1000
+                        pers.hp -= 10 * mobHit
+                        notifications.append(interface.Notify(str(int(mobHit + 10))+' [Hard hit]', bwords[ind].x, bwords[ind].y - 100, 'red'))
 
             pg.display.flip()
+
+        return pers

@@ -29,8 +29,12 @@ class Data():
             'Desc': ['Go out onto the streets', 'Go up onto the second floor'],
             'Move': ['out', 'upstairs'],
             'Goto': ['Village/OldManHouse', 'House/OldManHouseUpstairs'],
-            'Mobs': {'Chance': 100},
-            'Time': 100000
+            'Time': [1, 1],
+            'Mobs': {
+                'Chance': 100,
+                'Speed': 2,
+                'Object': 'Skeleton(atk = 5)'
+            },
         })
 
         self.chest.append({
