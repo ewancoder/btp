@@ -44,10 +44,6 @@ def gameLoop(surface):
             if 'Mobs' in place.keys():
                 if random.randrange(0, 100) < place['Mobs']['Chance']:
                     pers = battleScreen.loop(pers)
-                    if pers.hp <= 0:
-                        pers.hp = pers.maxhp * .2
-                        pers.experience -= pers.experience / 10
-                        #FIND CLOSEST VILLAGE/HOUSE/CAMPFIRE and resurrect there
         pers.save()
 
 if __name__ == '__main__':

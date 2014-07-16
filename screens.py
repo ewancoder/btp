@@ -193,7 +193,7 @@ class Battle():
             spd = 0
         speed.append(spd)
 
-        self.stats = interface.BattleStats(self.surface)
+        self.stats = interface.BattleStats(self.surface, mob)
 
         def updateWord():
             if words[self.index].startswith(e.unicode):
@@ -208,7 +208,7 @@ class Battle():
                     self.started = False
                     #It is the condition lol :D
                     #words[self.index] = ''
-                    notifications.append(interface.Notify(persHit, bwords[self.index].x, bwords[self.index].y))
+                    notifications.append(interface.Notify('{:.2f}'.format(persHit), bwords[self.index].x, bwords[self.index].y))
                     self.index = None
                 else:
                     bwords[self.index].word = words[self.index]
@@ -260,15 +260,19 @@ class Battle():
             self.surface.fill(0)
             self.surface.blit(self.bg, (0,0))
 
+            #STATS
+            if pers.hp < 1:
+                pers.hp = 0
+            if mob.hp < 1:
+                mob.hp = 0
+            self.stats.draw(self.surface, pers, mob)
+
             #NOTIFICATIONS
             for n in notifications:
                 if n.y > -n.surface.get_size()[1]:
                     n.draw(self.surface)
                 else:
                     del n
-
-            #STATS
-            self.stats.draw(self.surface, pers, mob)
 
             #WORDS
             for ind, w in enumerate(bwords):
@@ -283,8 +287,13 @@ class Battle():
                         words[ind] = ''
                         mobHit = random.randint(int((mob.atk - mob.atk / 3) * 1000), int((mob.atk + mob.atk / 3) * 1000)) / 1000
                         pers.hp -= 10 * mobHit
-                        notifications.append(interface.Notify(str(int(mobHit + 10))+' [Hard hit]', bwords[ind].x, bwords[ind].y - 100, 'red'))
+                        notifications.append(interface.Notify('{:.2f} [HH]'.format(mobHit + 10), bwords[ind].x, bwords[ind].y - 50, 'red'))
 
             pg.display.flip()
+
+        if pers.hp == 0:
+            pers.hp = pers.maxhp * .2
+            pers.experience -= pers.experience / 10
+            camp = next(item for item in d.place if item['Id'].startswith(basename(pers.place)))['Id']
 
         return pers

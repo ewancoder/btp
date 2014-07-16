@@ -180,7 +180,7 @@ class Notify():
         self.y -= 1
 
 class BattleStats():
-    def __init__(self, surface):
+    def __init__(self, surface, mob):
         self.FONT = pg.font.Font('Fonts/rpg.ttf', 50)
         tempWidth = 2.2
         self.WIDTH = surface.get_size()[0] / tempWidth
@@ -193,8 +193,12 @@ class BattleStats():
         self.surface.append(pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA))
         self.surface.append(pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA))
         self.picture = []
-        self.picture.append(pg.image.load('Images/menu.jpg'))
-        self.picture.append(pg.image.load('Images/menu.jpg'))
+        self.picture.append(pg.Surface((self.WIDTH * 8/10, self.HEIGHT / 1.3)))
+        self.picture[0].blit(pg.image.load('Images/Pers.png'), (0,0))
+        self.picture[0].set_colorkey((255,255,255))
+        self.picture.append(pg.Surface((self.WIDTH * 8/10, self.HEIGHT / 1.3)))
+        self.picture[1].set_colorkey((255,255,255))
+        self.picture[1].blit(pg.image.load('Images/Mobs/' + mob.name + '.png'), (0,0))
 
     def draw(self, surface, pers, mob):
         color = (200,100,100)
@@ -215,6 +219,7 @@ class BattleStats():
             gauge.fill((255,200,200))
             self.surface[i].blit(left, (0,0))
             self.surface[i].blit(gauge, (left.get_size()[0], 0))
-            self.surface[i].blit(self.picture[i], (50, 50))
+            #120 = 100 (rect height) + 20 (just const)
+            self.surface[i].blit(self.picture[i], (self.surface[i].get_size()[0] / 10, 120))
             pg.draw.rect(self.surface[i], (255,255,255), pg.Rect(0,0,gauge.get_size()[0]+left.get_size()[0],100), 1)
             surface.blit(self.surface[i], (self.X[i], self.Y))

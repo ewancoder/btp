@@ -46,7 +46,7 @@ class Pers():
         return self
 
 class Mob():
-    def __init__(self, maxhp = 20, atk = 1):
+    def __init__(self, maxhp = 200, atk = 1):
         self.maxhp = maxhp
         self.hp = maxhp
         self.atk = atk
