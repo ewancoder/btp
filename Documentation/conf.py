@@ -17,11 +17,14 @@ import sys
 import os
 
 #Block for mocking pygame
-import mock
+try:
+    import mock
 
-MOCK_MODULES = ['pygame']
-for modname in MOCK_MODULES:
-    sys.modules[modname] = mock.Mock()
+    MOCK_MODULES = ['pygame']
+    for modname in MOCK_MODULES:
+        sys.modules[modname] = mock.Mock()
+except:
+    pass
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
