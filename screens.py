@@ -7,6 +7,32 @@ import classes
 import data
 import interface
 
+class Hints():
+    def __init__(self, offset=0):
+        #Need to use __init__ for different Hints instances for menu/login/world/battle
+        self.hints = []
+        self.ind = [] #For indexed items
+        self.hidden = []
+        self.offset = offset
+
+    def add(self, text, index, delay=0):
+        self.hints.append(interface.Hint(text, self.offset + len(self.hints)*50 + 10, delay=delay))
+        self.ind.append(index)
+
+    def draw(self, surface):
+        for hint in self.hints:
+            hint.draw(surface)
+
+    def hide(self, index):
+        try:
+            self.hints[self.ind.index(index)].hide = True
+            self.hidden.append(self.ind.index(index))
+            for i in range(self.ind.index(index)+1,len(self.hints)):
+                self.hints[i].shift = 50
+            self.ind[self.ind.index(index)] = "hidden"
+        except:
+            pass
+
 class Menu():
     BG = pg.image.load('Images/menu.jpg')
     MUSIC = pg.mixer.Sound('Music/menu.ogg')
@@ -27,7 +53,11 @@ class Menu():
             SETTINGS_MENU
         )
         self.menu = interface.Menu(MENU)
-
+        self.hints = Hints()
+        self.hints.add('Use J/K to move Down/Up', 'jk')
+        self.hints.add('Use L (or Enter) to switch', 'lenter', 60)
+        self.hints.add('Version 0.01 alpha', 'version', 120)
+        
     def loop(self):
         clock = pg.time.Clock()
         #Returns its value (exits Menu) if not ''
@@ -42,6 +72,11 @@ class Menu():
             for e in events:
                 if e.type == pg.QUIT:
                     quit()
+                if e.type == pg.KEYDOWN:
+                    if e.key == pg.K_j or e.key == pg.K_k:
+                        self.hints.hide('jk')
+                    if e.key == pg.K_l or e.key == pg.K_RETURN:
+                        self.hints.hide('lenter')
             self.menu.events(events)
 
             if not pg.mixer.get_busy():
@@ -50,11 +85,12 @@ class Menu():
             self.surface.fill(0)
             self.surface.blit(self.BG, (-10, -10))
             self.menu.draw(self.surface)
+            self.hints.draw(self.surface)
 
             pg.display.flip()
 
 class Login():
-    TEXT = 'Tell me your name, Stranger!\nIf you are new here, I will tell you a story, and then you will step into this dangerous world, otherwise you will find yourself onto the place you left behind last time...'
+    TEXT = 'Tell me your name, Stranger!\nIf you belong to this place, you\'ll find yourself into the place you left behind last time, otherwise you shall begin your journey in the forest of damned...'
     BG = pg.image.load('Images/login.jpg')
 
     def __init__(self, surface):
@@ -65,7 +101,6 @@ class Login():
     def loop(self):
         clock = pg.time.Clock()
         self.parchment.prompt = ''
-        x, dx = 0, 1
 
         while True:
             clock.tick(30)
@@ -73,17 +108,18 @@ class Login():
             for e in events:
                 if e.type == pg.QUIT:
                     quit()
-                elif e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE:
-                    return ''
+                elif e.type == pg.KEYDOWN:
+                    if e.key == pg.K_ESCAPE:
+                        return ''
+                    elif e.key == pg.K_F1:
+                        self.message.hid_timer = 300
+                        self.message.hidden = not self.message.hidden
             name = self.parchment.events(events) #inputEvent
             if name not in (None, ''):
                 return name
 
             self.surface.fill(0)
-            self.surface.blit(self.BG, (-x,0))
-            x += dx
-            if x > self.BG.get_size()[0] - self.surface.get_size()[0]:
-                dx = 0
+            self.surface.blit(self.BG, (-10,-10))
             self.message.draw(self.TEXT)
             self.parchment.draw(self.surface)
 
@@ -97,6 +133,7 @@ class World():
         self.surface = surface
         self.inputBox = interface.Input(surface)
         self.message = interface.Message(surface)
+        self.battleScreen = Battle(surface)
 
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
@@ -105,11 +142,16 @@ class World():
         self.data.update(self.pers)
         if self.pers.place[:5] == 'intro':
             self.intro = True
-            place = self.pers.place[5:]
+            place = self.pers.place
             if self.introIndex < len(getattr(self.data, eval('place'))):
                 self.PLACE = None
                 self.text = getattr(self.data, eval('place'))[self.introIndex]
-                self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
+                if len(getattr(self.data, eval('place'))[self.introIndex][1]) != 1: #Because it grabs one letter other way
+                    self.text = getattr(self.data, eval('place'))[self.introIndex][0]
+                    self.bg = pg.image.load('Images/' + getattr(self.data, eval('place'))[self.introIndex][1] + '.jpg')
+                else:
+                    self.text = getattr(self.data, eval('place'))[self.introIndex]
+                    self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
                 if self.introIndex+1 < len(getattr(self.data, eval('place'))):
                     self.introIndex += 1
                 else:
@@ -134,7 +176,6 @@ class World():
 
     def loop(self):
         clock = pg.time.Clock()
-        x, dx = 0, 1
 
         while True:
             clock.tick(30)
@@ -144,8 +185,21 @@ class World():
                     exit()
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_RETURN and self.intro == True:
-                        return self.PLACE, None
+                        #NEED ASSURANCE
+                        if self.PLACE != None:
+                            self.pers.place = self.PLACE['Goto']
+                            if 'Mobs' in self.PLACE.keys():
+                                if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
+                                    self.pers = self.battleScreen.loop(self.pers)
+                        self.pers.save()
+                        self.update(self.pers)
+                        #return self.PLACE, None
+                    elif e.key == pg.K_F1:
+                        self.message.hid_timer = 300
+                        self.message.hidden = not self.message.hidden
+
             if self.intro == False:
+                #REPROGRAM TO MOVE CHARACTER OVER SCREEN
                 e = self.inputBox.events(events)
                 if e!= None and e in self.PLACE['Move']:
                     moveIndex = self.PLACE['Move'].index(e)
@@ -153,16 +207,29 @@ class World():
                     self.pers.time += move['Time'][moveIndex] if 'Time' in move else 10
                     moveto = self.PLACE['Goto'][self.PLACE['Move'].index(e)]
                     newplace = next(item for item in self.data.place if item['Id'] == moveto)
-                    return newplace, moveto
+                    #NEED ASSURANCE
+                    if self.PLACE != None:
+                        self.pers.place = moveto
+                        if 'Mobs' in newplace.keys():
+                            if random.randrange(0,100) < newplace['Mobs']['Chance']:
+                                self.pers = self.battleScreen.loop(self.pers)
+                    self.pers.save()
+                    self.update(self.pers)
+                    #return newplace, moveto
+
+            #LOGIC FOR ALL SPRITES
 
             self.surface.fill(0)
-            self.surface.blit(self.bg, (-x,0))
-            x += dx
-            if x > self.bg.get_size()[0] - self.surface.get_size()[0]:
-                dx = 0
+            if self.intro == True:
+                self.surface.blit(self.bg, (-5,-5))
+            else:
+                #Should calculate exact position
+                self.surface.blit(self.bg, (-300,-5))
+                #DRAW ALL SPRITES
 
             self.message.draw(self.text)
             if self.intro == False:
+                #Remove this 'cause I don't need inputBox anymore (there will be floating text over objects)
                 self.inputBox.draw(self.surface)
 
             pg.display.flip()

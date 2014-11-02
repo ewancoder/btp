@@ -7,7 +7,7 @@ class Pers():
     name = ''
     #Unique ID of the place which is loaded by World class
     #If starts with 'intro' - load place[5:][0...len(place[5:])] consecutively just as a slideshow
-    place = 'introIntroduction'
+    place = 'introduction'
 
     #Characteristics
     experience = 0

@@ -6,9 +6,10 @@ class Menu():
     X, Y = 10, 10
     DCOLOR, HCOLOR = (0, 0, 0), (200, 200, 200)
     FONT = pg.font.Font('Fonts/rpg.otf', 40)
-    SELECT_SOUND = pg.mixer.Sound('Sounds/select.ogg')
-    SWITCH_SOUND = pg.mixer.Sound('Sounds/switch.ogg')
+    SELECT_SOUND = pg.mixer.Sound('Sounds/door.ogg')
+    SWITCH_SOUND = pg.mixer.Sound('Sounds/click.ogg')
 
+    out = 150 #for X changing
     selected = 0    #Index of selected menu item
     unselected = 0  #Index of unselected menu (for cool effects)
     now = 0         #Index of menu which is showing NOW
@@ -20,6 +21,7 @@ class Menu():
         self.update()
 
     def update(self):
+        self.out = 150
         self.selected = 0
         self.unselected = 0
         self.items = [{'Label': i[0], 'Action': i[1]} for i in self.ITEMS[self.now]]
@@ -31,8 +33,8 @@ class Menu():
                 if self.sel_timer >= 0:
                     self.sel_timer -= 4
                     color = (self.HCOLOR[0] + int(self.sel_timer*1.5),
-                             self.HCOLOR[1] + int(self.sel_timer/4),
-                             self.HCOLOR[2] + int(self.sel_timer/4))
+                             self.HCOLOR[1],
+                             self.HCOLOR[2])
                 else:
                     color = self.HCOLOR
             elif self.unselected == index:
@@ -46,7 +48,11 @@ class Menu():
             else:
                 color = self.DCOLOR
             text = self.FONT.render(i['Label'], True, color)
-            surface.blit(text, (self.X, self.Y + offset))
+            if self.out > 0:
+                surface.blit(text, (self.X-self.out, self.Y + offset))
+                self.out -= 10
+            else:
+                surface.blit(text, (self.X, self.Y + offset))
             offset += self.FONT.get_height()
 
     def events(self, events):
@@ -71,17 +77,59 @@ class Menu():
                     self.items[self.selected]['Action']()
                     self.update()
 
+class Hint():
+    ALPHA = 180
+    FONT = pg.font.Font('Fonts/rpg.otf', 40)
+
+    def __init__(self, text, y=10, x=10, style='default', delay=0):
+        self.text = str(text)
+        self.x = x
+        self.y = y
+        self.alpha = 0
+        self.surface = pg.Surface((self.FONT.size(self.text)[0] + 10, self.FONT.size(self.text)[1]))
+        self.surface.set_alpha(0)
+        if style == 'default':
+            self.color = (200,100,100)
+        self.delay = delay
+        self.hide = False
+        self.shift = 0
+
+    def draw(self, surface):
+        if self.delay>0:
+            self.delay -= 1
+        else:
+            x = surface.get_width() - self.surface.get_width() - self.x
+            if self.alpha < self.ALPHA and self.hide == False:
+                self.alpha += 4
+            self.surface.set_alpha(self.alpha)
+            bg_color = (0,0,0, self.alpha)
+            self.rend_text = self.FONT.render(self.text, True, self.color)
+            self.surface.fill((bg_color))
+            self.surface.blit(self.rend_text, (5,0))
+            surface.blit(self.surface, (x, self.y))
+
+        if self.hide == True:
+            if self.alpha > 0:
+                self.alpha -= 4
+
+        if self.shift > 0:
+            self.shift -= 1
+            self.y -= 1
+
 class Message():
+    ALPHA = 130
+    hidden = False
+    hid_timer = 300;
+    FONT_COLOR = (200,200,200)
+
     def __init__(self, surface):
-        self.BG_COLOR = (0,0,0, 80)
-        self.TEXT_COLOR = (200,200,100)
         self.RECT = pg.Rect((0, 0, surface.get_size()[0] - 10*2, surface.get_size()[1] / 3))
         self.X = surface.get_size()[0] / 2 - self.RECT.width / 2
-        self.setFontSize(24)
+        self.setFontSize(30)
         self.surface = surface
 
     def setFontSize(self, size):
-        self.FONT = pg.font.Font('Fonts/comic.ttf', size)
+        self.FONT = pg.font.Font('Fonts/rpg.otf', size)
 
     def wordwrap(self, text):
         size = 20
@@ -109,30 +157,37 @@ class Message():
         return finallines
 
     def draw(self, finallines):
-        surface = pg.Surface(self.RECT.size, pg.SRCALPHA, 32)
-        surface.fill(self.BG_COLOR)
+        if self.hidden == False or (self.hidden == True and self.hid_timer < 1000):
+            surface = pg.Surface(self.RECT.size, pg.SRCALPHA, 32)
+            surface.fill((0,0,0, self.ALPHA))
 
-        height = 0
-        for line in self.wordwrap(finallines):
-            text = self.FONT.render(line, True, self.TEXT_COLOR)
-            surface.blit(text, ((self.RECT.width - text.get_width()) / 2, height))
-            height += self.FONT.size(line)[1]
+            height = 0
+            for line in self.wordwrap(finallines):
+                text = self.FONT.render(line, True, self.FONT_COLOR)
+                surface.blit(text, ((self.RECT.width - text.get_width()) / 2, height))
+                height += self.FONT.size(line)[1]
 
-        self.surface.blit(surface, (self.X, 10))
+            self.surface.blit(surface, (self.X - self.hid_timer, 10))
+            if self.hidden == False and self.hid_timer > 0:
+                self.hid_timer -=50
+            elif self.hidden == True:
+                self.hid_timer +=50
 
 class Input():
+    KEY_SOUND = pg.mixer.Sound('Sounds/click.ogg')
+
     def __init__(self, surface):
         self.prompt = ''
-        self.FONT = pg.font.Font('Fonts/rpg.ttf', 50)
-        self.WIDTH = surface.get_size()[0] / 1.2
-        self.HEIGHT = surface.get_size()[1] / 8
+        self.FONT = pg.font.Font('Fonts/rpg.ttf', 30)
+        self.WIDTH = surface.get_size()[0] / 2
+        self.HEIGHT = surface.get_size()[1] / 14
         self.X = (surface.get_size()[0] - self.WIDTH) / 2
         self.Y = surface.get_size()[1] - self.HEIGHT
         self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
 
     def draw(self, surface):
         self.surface.fill((0,0,0, 120))
-        text = self.FONT.render(self.prompt, True, (180,150,0))
+        text = self.FONT.render(self.prompt, True, (180,150,40))
         self.surface.blit(text, ((self.WIDTH - text.get_width()) / 2, (self.HEIGHT - text.get_height()) / 2))
         surface.blit(self.surface, (self.X, self.Y))
 
@@ -141,6 +196,7 @@ class Input():
             if e.type == pg.KEYDOWN:
                 if e.unicode.isalpha():
                     self.prompt += e.unicode
+                    self.KEY_SOUND.play()
                 elif e.key == pg.K_BACKSPACE:
                     self.prompt = self.prompt[:-1]
                 elif e.key == pg.K_RETURN:

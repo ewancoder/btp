@@ -5,7 +5,7 @@ import os
 import random
 
 import pygame as pg
-#pg.mixer.pre_init(22050, -16, True, 512)
+pg.mixer.pre_init(44100, -16, 2, 2048)
 pg.init()
 
 import classes
@@ -37,14 +37,16 @@ def gameLoop(surface):
             loaded = True
 
         worldScreen.update(pers) #Load whole world current environment based on "pers"
-        place, move = worldScreen.loop() #Loop current world "snap" (until you move away or hit a monster)
-        print(pers.time)
-        if place != None:
-            pers.place = place['Goto'] if  move == None else move
-            if 'Mobs' in place.keys():
-                if random.randrange(0, 100) < place['Mobs']['Chance']:
-                    pers = battleScreen.loop(pers)
-        pers.save()
+        #NEED ASSURANCE
+        worldScreen.loop()
+        #place, move = worldScreen.loop() #Loop current world "snap" (until you move away or hit a monster)
+        #print(pers.time)
+        #if place != None:
+        #    pers.place = place['Goto'] if  move == None else move
+        #    if 'Mobs' in place.keys():
+        #        if random.randrange(0, 100) < place['Mobs']['Chance']:
+        #            pers = battleScreen.loop(pers)
+        #pers.save()
 
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)

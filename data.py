@@ -8,19 +8,23 @@ class Data():
         self.place = []
 
         self.place.append({
-            'Id': 'introIntroduction',
+            'Id': 'introduction',
             'Goto': 'House/OldManHouse'
         })
 
-        self.Introduction = [
-            'After all worlds has merged, all the Elvines has died, for they did not belong to a new world created by curious Elder One, they did not managed to bear their cause, to save world each from another apart. All, but for Lucifer who was exalted and was not anymore one of the Elvines.',
-            'Even the Goddess was perished forewer, for pure Light essence could not live in new world',
-            'Other races survived, but begun big survival fight between races and all kinds of creatures',
-            'And so it was for two thousand long years, blood spilled on earth until the Earth could not absorb it anymore, and then blood became rivers. They formed 3 big forks, and they was named upon 3 greatest warrior on that war: Lieones, Batrexar and Adela',
-            'Then, after 20 years, a lot of creature kinds was dead end, but lots was alive. A peace was made between three main fractions, and that was it.',
-            'One land for brave Great Lieones, who killed last dragon by himself; one for Smart Batrexar, who was the most concerned in a peace, and one for charming Adela, who was as deathly dangerous as charming.',
-            'And after 10 years after that, amidst these grievous days, a boy had born. A mother died giving birth. A father was long dead. There was no relatives to him, so he strangled to live.',
-            'One old man with no name find the boy. He took him and taught to fight. He called him... [' + pers.name + ']...'
+        self.introduction = [
+            'There was a peaceful, beautiful planet... once upon a time, when humanity only began to evolve into something bigger.',
+            'Humans just started developing artificial black holes for quick interstellar travel, when suddenly it happend.',
+            'Not a man knew what was going on. The sky just gone black out of clear sunny day, it suddenly became pitch-dark.',
+            'There was panic. Scientists could not determine a cause of this event. Anyway, they hadn\'t much time. 3 hours later, The lightning stuck the Earth. The lightning a man have never seen.',
+            'After that, many people died. There was lots of earthquakes, tsunamis, every kind of horrible disasters. And noone knew what\'s going on. Then strange things began to happen.',
+            'Impossible monsters came to our world. Werewolves, walking trees, dark and horrible dragon-like creatures.',
+            'But with them, there came other kind of creatures, who fought evil ones with rage and fury.',
+            'So Earth was not Earth anymore...',
+            'For 200 long years there was a bloody war between all possible creatures.',
+            'Then we found some kind of peace.',
+            'In such horrible times a boy was born, his mother died giving birth, father was long gone for war.',
+            'But one old man with no name found the boy. He took him and taught to fight. He called him... [' + pers.name + ']...'
         ]
 
         self.place.append({
