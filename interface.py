@@ -1,16 +1,19 @@
-import random
+import random #For Word X-positioning
 
 import pygame as pg
 
 class Menu():
     X, Y = 10, 10
-    DCOLOR, HCOLOR = (200, 200, 100), (200, 100, 100)
-    FONT = pg.font.Font('Fonts/rpg.ttf', 40)
+    DCOLOR, HCOLOR = (0, 0, 0), (200, 200, 200)
+    FONT = pg.font.Font('Fonts/rpg.otf', 40)
     SELECT_SOUND = pg.mixer.Sound('Sounds/select.ogg')
     SWITCH_SOUND = pg.mixer.Sound('Sounds/switch.ogg')
 
     selected = 0    #Index of selected menu item
+    unselected = 0  #Index of unselected menu (for cool effects)
     now = 0         #Index of menu which is showing NOW
+    unsel_timer = 0   #30 for 1 sec --- sel. timer for cool effects
+    sel_timer = 0
 
     def __init__(self, items):
         self.ITEMS = items
@@ -18,13 +21,28 @@ class Menu():
 
     def update(self):
         self.selected = 0
+        self.unselected = 0
         self.items = [{'Label': i[0], 'Action': i[1]} for i in self.ITEMS[self.now]]
 
     def draw(self, surface):
         offset = 0 #Incremental variable for making y-difference
         for index, i in enumerate(self.items):
             if self.selected == index:
-                color = self.HCOLOR
+                if self.sel_timer >= 0:
+                    self.sel_timer -= 4
+                    color = (self.HCOLOR[0] + int(self.sel_timer*1.5),
+                             self.HCOLOR[1] + int(self.sel_timer/4),
+                             self.HCOLOR[2] + int(self.sel_timer/4))
+                else:
+                    color = self.HCOLOR
+            elif self.unselected == index:
+                if self.unsel_timer > 1:
+                    self.unsel_timer -= 1
+                    color = (self.HCOLOR[0] - int(self.HCOLOR[0] / self.unsel_timer),
+                             self.HCOLOR[1] - int(self.HCOLOR[1] / self.unsel_timer),
+                             self.HCOLOR[2] - int(self.HCOLOR[2] / self.unsel_timer))
+                else:
+                    color = self.DCOLOR
             else:
                 color = self.DCOLOR
             text = self.FONT.render(i['Label'], True, color)
@@ -37,11 +55,17 @@ class Menu():
                 if e.key == pg.K_DOWN or e.key == pg.K_j or e.key == pg.K_s:
                     if self.selected < len(self.items) - 1:
                         self.SWITCH_SOUND.play()
+                        self.unselected = self.selected
                         self.selected += 1
+                        self.unsel_timer = 10
+                        self.sel_timer = 40
                 elif e.key == pg.K_UP or e.key == pg.K_k or e.key == pg.K_w:
                     if self.selected > 0:
                         self.SWITCH_SOUND.play()
+                        self.unselected = self.selected
                         self.selected -= 1
+                        self.unsel_timer = 10
+                        self.sel_timer = 40
                 elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
                     self.SELECT_SOUND.play()
                     self.items[self.selected]['Action']()

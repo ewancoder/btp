@@ -32,7 +32,6 @@ class Menu():
         clock = pg.time.Clock()
         #Returns its value (exits Menu) if not ''
         self.ret = ''
-        x, dx = 0, 1
 
         while True:
             clock.tick(30)
@@ -47,12 +46,9 @@ class Menu():
 
             if not pg.mixer.get_busy():
                 self.MUSIC.play(-1)
-            x += dx
-            if x > self.BG.get_size()[0] - self.surface.get_size()[0] or x <= 0:
-                dx *= -1
 
             self.surface.fill(0)
-            self.surface.blit(self.BG, (-x, 0))
+            self.surface.blit(self.BG, (-10, -10))
             self.menu.draw(self.surface)
 
             pg.display.flip()
