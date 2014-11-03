@@ -12,25 +12,31 @@ class Hints():
         #Need to use __init__ for different Hints instances for menu/login/world/battle
         self.hints = []
         self.ind = [] #For indexed items
-        self.hidden = []
+        self.count = 0 #count for hidden hints
         self.offset = offset
 
     def add(self, text, index, delay=0):
-        self.hints.append(interface.Hint(text, self.offset + len(self.hints)*50 + 10, delay=delay))
+        self.hints.append(interface.Hint(text, self.offset + len(self.hints)*40 + 10, delay=delay))
         self.ind.append(index)
 
     def draw(self, surface):
         for hint in self.hints:
             hint.draw(surface)
 
-    def hide(self, index):
+    def hide(self, index=0):
         try:
-            self.hints[self.ind.index(index)].hide = True
-            self.hidden.append(self.ind.index(index))
-            for i in range(self.ind.index(index)+1,len(self.hints)):
-                self.hints[i].shift = 50
-            self.ind[self.ind.index(index)] = "hidden"
+            if index == 0:
+                ind = self.count
+            else:
+                ind = self.ind.index(index)
+            self.hints[ind].hide = True
+            print(self.count)
+            self.count += 1
+            for i in range(ind+1,len(self.hints)):
+                self.hints[i].shift = 40
+            self.ind[ind] = "hidden"
         except:
+            print('error in "hide" method of Hints, line 42 of screens.py')
             pass
 
 class Menu():
@@ -131,9 +137,11 @@ class World():
         self.introIndex = 0
         self.musicOldName = ''
         self.surface = surface
-        self.inputBox = interface.Input(surface)
         self.message = interface.Message(surface)
         self.battleScreen = Battle(surface)
+        self.hints = Hints(interface.Message.HEIGHT + 10)
+        self.hints.add('Use F1 to hide/restore message window', 'F1')
+        self.hints.add('Use Backspace to hide a hint like this', 'Hints', 240)
 
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
@@ -183,10 +191,7 @@ class World():
 
         try:
             for ind, move in enumerate(self.PLACE['Moves']):
-                try:
-                    self.moves.append(interface.Move(move[0], move[1], ind, move[4]))
-                except:
-                    self.moves.append(interface.Move(move[0], move[1], ind))
+                self.moves.append(interface.Move(move[0], move[1], ind))
         except:
             pass
 
@@ -211,67 +216,50 @@ class World():
                     elif e.key == pg.K_F1:
                         self.message.hid_timer = 300
                         self.message.hidden = not self.message.hidden
+                    elif e.key == pg.K_BACKSPACE:
+                        self.hints.hide()
             for index, move in enumerate(self.moves):
                 if self.locked == index or self.locked == -1:
                     ind = move.events(events)
                     if ind != None:
-                        if ind == -1:
-                            move = self.PLACE['Moves'][oldind]
-                        else:
-                            move = self.PLACE['Moves'][ind]
-                        #KOSTYL
-                        oldind = ind
+                        moveLocal = self.PLACE['Moves'][ind]
                         self.locked = ind
-                        def load():
-                            self.pers.place = move[3]
+                        if ind != -1:
+                            move.progress += .01 * self.pers.speed
+                        if move.progress >= 1:
+                            self.pers.place = moveLocal[2]
                             self.pers.save()
                             self.update(self.pers)
-                        if move[2] == 'left':
-                            self.dx -= 1 * self.pers.speed
-                            if self.x >= 10:
-                                load()
-                        elif move[2] == 'right':
-                            self.dx += 1 * self.pers.speed
-                            print(self.x)
-                            if self.x <= -900:
-                                load()
+                        else:
+                            if moveLocal[1] == 'left':
+                                if self.x < -10:
+                                    self.dx -= 2 * self.pers.speed
+                                else:
+                                    self.x = -10
+                            elif moveLocal[1] == 'right':
+                                if self.x > self.surface.get_width() - self.bg.get_width() - 10:
+                                    self.dx += 2 * self.pers.speed
+                                else:
+                                    self.x = self.surface.get_width() - self.bg.get_width() - 10
 
             if self.intro == False:
                 pass
                 #REPROGRAM TO MOVE CHARACTER OVER SCREEN
 
-                #OLD VERSION
-#                e = self.inputBox.events(events)
-#                if e!= None and e in self.PLACE['Move']:
-#                    moveIndex = self.PLACE['Move'].index(e)
-#                    move = next(item for item in self.data.place if item['Id'] == self.PLACE['Goto'][moveIndex])
-#                    self.pers.time += move['Time'][moveIndex] if 'Time' in move else 10
-#                    moveto = self.PLACE['Goto'][self.PLACE['Move'].index(e)]
-#                    newplace = next(item for item in self.data.place if item['Id'] == moveto)
-                    #NEED ASSURANCE
-#                    if self.PLACE != None:
-#                        self.pers.place = moveto
-#                        if 'Mobs' in newplace.keys():
-#                            if random.randrange(0,100) < newplace['Mobs']['Chance']:
-#                                self.pers = self.battleScreen.loop(self.pers)
-#                    self.pers.save()
-#                    self.update(self.pers)
-                    #return newplace, moveto
-
             #LOGIC FOR ALL SPRITES
 
             if self.dx > 0:
-                self.x -= 1 * int(self.pers.speed / 5)
-                self.dx -= 1 * int(self.pers.speed / 5)
+                self.x -= 1
+                self.dx -= 1
             if self.dx < 0:
-                self.x += 1 * int(self.pers.speed / 5)
-                self.dx += 1 * int(self.pers.speed / 5)
+                self.x += 1
+                self.dx += 1
             if self.dy > 0:
-                self.y -= 1 * int(self.pers.speed / 5)
-                self.dy -= 1 * int(self.pers.speed / 5)
+                self.y -= 1
+                self.dy -= 1
             if self.dy < 0:
-                self.y += 1 * int(self.pers.speed / 5)
-                self.dy += 1 * int(self.pers.speed / 5)
+                self.y += 1
+                self.dy += 1
 
             self.surface.fill(0)
             if self.intro == True:
@@ -282,12 +270,9 @@ class World():
                 #DRAW ALL SPRITES
 
             self.message.draw(self.text)
-            if self.intro == False:
-                #Remove this 'cause I don't need inputBox anymore (there will be floating text over objects)
-                self.inputBox.draw(self.surface)
-            
             for move in self.moves:
                 move.draw(self.surface, self.x)
+            self.hints.draw(self.surface)
 
             pg.display.flip()
 

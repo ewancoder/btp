@@ -1,6 +1,5 @@
-words = [
-    'question', 'weather', 'earth', 'rueful', 'translate', 'yank', 'ugly', 'illegal', 'opensource', 'potato', 'automobile', 'surgery', 'dye', 'faceless', 'gather', 'hideous', 'jumper', 'knee', 'light', 'zdor', 'xor', 'complex', 'vegetable', 'brick', 'nest', 'modest'
-]
+with open('words.txt') as f:
+    words = f.read().splitlines()
 
 class Data():
     def update(self, pers):
@@ -31,19 +30,21 @@ class Data():
             'Id': 'Forest/StumpOfDestiny',
             'Text': 'This is The mighty Stump of Destiny, historical relict found in these woods after the Great Sorrow. It gave life to many Dworaks after the slaughter, which then took care of those in need. They rebuild community of Elves and Humans, communed orks with dwarfs. And all this were possible because of a simple stump. Even small things could do a big difference.',
             'Moves': [
-                ('Go left', (20,400), 'left', 'Forest/Grove'),
-                ('Go right', (-20,400), 'right', 'test'),
-                ('Pray', (300,300), 7, 'test')
-            ]
+                ('Go left', 'left', 'Forest/Grove')
+            ],
+            'Hints': ('Type white text under yellow captions to move',
+                      'You will move to another location when progress bar is full',
+                      'o')
         })
 
         self.place.append({
             'Id': 'Forest/Grove',
             'Text': 'Small grove of fresh trees, plentiful of branches, logs and flowers.',
             'Moves': [
-                ('Go left', (20,400), 'left', 'Village/WestGate'),
-                ('Go right', (-20,400), 'right', 'Forest/StumpOfDestiny'),
-                ('To the Grove', (300,300), 7, 'Forest/CheeryGrove', (-60,-20))
+                ('Go right', 'right', 'Forest/StumpOfDestiny'),
+                ('Go left', 'left', ''),
+                ('To the grove', 'top', 'Forest/StumpOfDestiny'),
+                ('To unknown lands', 'bottom', 20, '')
             ]
         })
 
@@ -51,38 +52,15 @@ class Data():
             'Id': 'Forest/CheeryGrove',
             'Text': 'Light and cheerful grove goes right onto the road to Oak Village.',
             'Moves': [
-                ('Go to road', (300,100), 7, 'Forest/RoadToOakVillage')
-                ]
-            })
-
-        self.place.append({
-            'Id': 'House/OldManHouse',
-            'Text': 'This is the place where you\'ve been raised. Old man are now gone for a {0} days. So you are decided to go off [CHANGEABLE BY TIME AND OTHER FACTORS].\nYou can go [out] or [upstairs]. Also you can check [chest] under the window.'.format(int(20 + pers.time / (24 * 60))),
-            'Desc': ['Go out onto the streets', 'Go up onto the second floor'],
-            'Move': ['out', 'upstairs'],
-            'Goto': ['Village/OldManHouse', 'House/OldManHouseUpstairs'],
-            'Time': [1, 1],
-            'Mobs': {
-                'Chance': 100,
-                'Speed': 2,
-                'Object': 'Skeleton(atk = 5)'
-            },
-        })
-
-        self.chest.append({
-            'Id': 'Village/OldManHouse',
-            'Items': [
-                'Pocket knife',
-                '_80_Gold',
-                '_q_Beginning',
-                '_n_OldManNote'
+                ('Go here', (300,300), 'top', 'Forest/Grove', (-60,-20)),
+                ('Go to road', (300,100), 7, 'Forest/RoadToOakVillage', (-60,-20))
             ]
         })
 
         self.place.append({
-            'Id': 'Village/OldManHouse',
-            'Text': 'Your old home standing here, lurching in dappled shadows of pale ivy leaves. Here you\'ve been raised, here you\'ve been taught. Brooding memories filling your brain.',
-            'Desc': ['Go into the old man\s house', 'Go to the center of the village', 'Go to west towards the gates'],
-            'Move': ['in', 'go to center', 'go to west'],
-            'Goto': ['House/OldManHouse', 'Village/PaleVillageCenter', 'Village/PaleVillageWest'],
-        })
+            'Id': 'Forest/RoadToOakVillage',
+            'Text': 'You can\'t go further because I\'ve not developed it yet',
+            'Moves': [
+                ('To the grove', (400,300), 'bottom', 'Forest/CheeryGrove', (-60,-20))
+                ]
+            })

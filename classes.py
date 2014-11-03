@@ -17,7 +17,7 @@ class Pers():
     atk = 4
 
     #Speed of movement
-    speed = 10
+    speed = 2
 
     #Dynamic characteristics
     hp = maxhp
@@ -34,6 +34,11 @@ class Pers():
     items = [
         '_2_PocketKnife',
         '_10_Gold'
+    ]
+
+    #History of viewed hints
+    hints = [
+        ''
     ]
 
     def save(self):

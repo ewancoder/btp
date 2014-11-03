@@ -78,70 +78,94 @@ class Menu():
                     self.items[self.selected]['Action']()
                     self.update()
 
+class ProgressBar():
+    ALPHA = 130
+    HEIGHT = 4
+    
+    def __init__(self, width):
+        self.width = width
+        self.surface = pg.Surface((width,self.HEIGHT), pg.SRCALPHA, 32)
+
+    def draw(self, surface, xy, progress):
+        (x, y) = xy
+        self.surface.fill((0,0,0, self.ALPHA))
+        pg.draw.rect(self.surface, (255,255,255), pg.Rect(0,0,self.width,self.HEIGHT))
+        pg.draw.rect(self.surface, (255,100,100), pg.Rect(0,0,int(self.width*progress),self.HEIGHT))
+        pg.draw.rect(self.surface, (255,0,0), pg.Rect(0,0,self.width,self.HEIGHT), 1)
+        surface.blit(self.surface, (x, y))
+
 class Move():
     ALPHA = 130
-    A_TITLE_COLOR = (200,200,100)
+    A_TITLE_COLOR = (200,200,100) #Activated title
     TITLE_COLOR = (200,100,100)
     FONT_COLOR = (200,200,200)
-    locked = -1
+    FONT = pg.font.Font('Fonts/rpg.otf', 20)
 
-    def __init__(self, text, xy, index, visible=0):
-        self.allowed = True
-        self.visible = visible
-        self.index = index
+    def randomWord(self):
+        rand = ['qivjsf',
+                'cuxtp',
+                'ewalg',
+                'dmbnr',
+                'yzkoh']
+        word = random.choice(data.words)
+        for i in range(5):
+            if self.index == i:
+                while word[:1] not in rand[i]:
+                    word = random.choice(data.words)
+                return word
+
+    def __init__(self, text, style, index):
+        self.locked_color = 0 #RED-increment
+        self.locked = False
+        self.allowed = True #In focus, allow printing
         self.text = text
-        (self.x, self.y) = xy
-        self.FONT = pg.font.Font('Fonts/rpg.otf', 20)
-        self.RECT = pg.Rect((0, 0, self.FONT.size(text)[0] + 10, self.FONT.size(text)[1]))
+        self.style = style
+        self.index = index
+        self.rtext = self.randomWord()
+        for i in range(4):
+            self.rtext = self.rtext + ' ' + self.randomWord()
+
+        self.biggerx = self.FONT.size(self.text)[0] * 2
+
+        self.RECT = pg.Rect((0, 0, self.biggerx, self.FONT.size(text)[1]))
         self.surface = pg.Surface(self.RECT.size, pg.SRCALPHA, 32)
-        self.rtext = random.choice(data.words) + ' ' + random.choice(data.words)
-        self.rRECT = pg.Rect((0, 0, self.FONT.size(self.rtext)[0] + 10, self.FONT.size(self.rtext)[1]))
+        self.rRECT = pg.Rect((0, 0, self.biggerx, self.FONT.size(self.rtext)[1]))
         self.rsurface = pg.Surface(self.rRECT.size, pg.SRCALPHA, 32)
 
+        self.progressBar = ProgressBar(self.biggerx)
+        self.progress = 0
+
     def draw(self, surface, outx):
-        if self.x < 0:
-            x = surface.get_width() - self.RECT.width + self.x
+        if self.style == 'right':
+            x = surface.get_width() - self.biggerx - 10
+            y = 600
+        elif self.style == 'left':
+            x = 20
+            y = 600
+        elif self.style == 'top':
+            x = surface.get_width() / 2 - self.biggerx / 2
+            y = Message.HEIGHT + 30
+        elif self.style == 'bottom':
+            x = surface.get_width() / 2 - self.biggerx / 2
+            y = surface.get_height() - self.FONT.get_height()*2 - 10
         else:
-            x = self.x
-        if self.visible != 0:
-            print(outx)
-            if outx > self.visible[0] and outx < self.visible[1]:
-                self.allowed = True
-                self.surface.fill((0,0,0, self.ALPHA))
-                self.rsurface.fill((0,0,0, self.ALPHA))
-                text = self.FONT.render(self.text, True, self.A_TITLE_COLOR)
-                rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
-                self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
-                self.rsurface.blit(rtext, ((self.rRECT.width - rtext.get_width()) / 2, 0))
-                surface.blit(self.surface, (x, self.y))
-                surface.blit(self.rsurface, (x, self.y + self.RECT.height))
-            elif abs(outx - self.visible[0]) < 130 or abs(outx - self.visible[1]) < 130:
-                self.allowed = False
-                minoutx = abs(outx - self.visible[0])
-                if abs(outx - self.visible[1]) < minoutx:
-                    minoutx = abs(outx - self.visible[1])
-                if minoutx == 0:
-                    minoutx = 1
-                self.surface.fill((0,0,0, int(self.ALPHA - abs(minoutx))))
-                self.rsurface.fill((0,0,0, int(self.ALPHA - abs(minoutx))))
-                text = self.FONT.render(self.text, True, self.TITLE_COLOR)
-                rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
-                self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
-                self.rsurface.blit(rtext, ((self.rRECT.width - rtext.get_width()) / 2, 0))
-                surface.blit(self.surface, (x, self.y))
-                surface.blit(self.rsurface, (x, self.y + self.RECT.height))
-            else:
-                self.allowed = False
-        else:
-            self.allowed = True
-            self.surface.fill((0,0,0, self.ALPHA))
-            self.rsurface.fill((0,0,0, self.ALPHA))
-            text = self.FONT.render(self.text, True, self.A_TITLE_COLOR)
-            rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
-            self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
-            self.rsurface.blit(rtext, ((self.rRECT.width - rtext.get_width()) / 2, 0))
-            surface.blit(self.surface, (x, self.y))
-            surface.blit(self.rsurface, (x, self.y + self.RECT.height))
+            x = 0
+            y = 0
+        self.progressBar.draw(surface, (x,y), self.progress)
+
+        self.allowed = True #In focus, allow printing
+        self.surface.fill((0,0,0, self.ALPHA))
+        self.rsurface.fill((self.locked_color,0,0, self.ALPHA))
+        if self.locked and self.locked_color < 70:
+            self.locked_color += 10
+        elif not self.locked and self.locked_color > 0:
+            self.locked_color -= 10
+        text = self.FONT.render(self.text, True, self.A_TITLE_COLOR)
+        rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
+        self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
+        self.rsurface.blit(rtext, (10, 0))
+        surface.blit(self.surface, (x, y))
+        surface.blit(self.rsurface, (x, y + self.RECT.height))
 
     def events(self, events):
         if self.allowed:
@@ -149,21 +173,25 @@ class Move():
                 if e.type == pg.KEYDOWN:
                     if e.unicode.isalpha():
                         if self.rtext.startswith(e.unicode):
-                            #rtext = random text
                             self.rtext = self.rtext[1:]
                             if self.rtext[0] == ' ':
-                                self.rtext = self.rtext[1:] + ' ' + random.choice(data.words)
-                                self.rRECT = pg.Rect((0, 0, self.FONT.size(self.rtext)[0] + 10, self.FONT.size(self.rtext)[1]))
-                                self.rsurface = pg.Surface(self.rRECT.size, pg.SRCALPHA, 32)
+                                self.rtext = self.rtext[1:] + ' ' + self.randomWord()
+                                self.locked = False
                                 return -1
                             else:
+                                self.locked = True
                                 return self.index
                     if e.key == pg.K_ESCAPE:
-                        return -1
+                        if self.locked:
+                            while self.rtext[0] != ' ':
+                                self.rtext = self.rtext[1:]
+                            self.rtext = self.rtext[1:] + ' ' + self.randomWord()
+                            self.locked = False
+                            return -1
 
 class Hint():
     ALPHA = 180
-    FONT = pg.font.Font('Fonts/rpg.otf', 40)
+    FONT = pg.font.Font('Fonts/rpg.otf', 30)
 
     def __init__(self, text, y=10, x=10, style='default', delay=0):
         self.text = str(text)
@@ -205,9 +233,10 @@ class Message():
     hidden = False
     hid_timer = 300;
     FONT_COLOR = (200,200,200)
+    HEIGHT = 220
 
     def __init__(self, surface):
-        self.RECT = pg.Rect((0, 0, surface.get_size()[0] - 10*2, surface.get_size()[1] / 3))
+        self.RECT = pg.Rect((0, 0, surface.get_size()[0] - 10*2, self.HEIGHT))
         self.X = surface.get_size()[0] / 2 - self.RECT.width / 2
         self.setFontSize(30)
         self.surface = surface
@@ -259,12 +288,12 @@ class Message():
 
 class Input():
     KEY_SOUND = pg.mixer.Sound('Sounds/click.ogg')
+    HEIGHT = 50
 
     def __init__(self, surface):
         self.prompt = ''
         self.FONT = pg.font.Font('Fonts/rpg.ttf', 30)
         self.WIDTH = surface.get_size()[0] / 2
-        self.HEIGHT = surface.get_size()[1] / 14
         self.X = (surface.get_size()[0] - self.WIDTH) / 2
         self.Y = surface.get_size()[1] - self.HEIGHT
         self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
