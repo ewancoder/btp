@@ -77,6 +77,29 @@ class Menu():
                     self.items[self.selected]['Action']()
                     self.update()
 
+class Move():
+    ALPHA = 10
+    FONT = pg.font.Font('Fonts/rpg.otf', 30)
+
+    def __init__(self, text, xy):
+        self.text = text
+        (self.x, self.y) = xy
+        self.surface = pg.Surface((self.FONT.size(self.text)[0] + 10, self.FONT.size(self.text)[1]))
+        self.surface.set_alpha(self.ALPHA)
+        self.color = (200,100,100)
+        self.surface.set_alpha(self.ALPHA)
+
+    def draw(self, surface):
+        if self.x < 0:
+            x = surface.get_width() - self.FONT.size(self.text)[0] + self.x
+        else:
+            x = self.x
+        bg_color = (0,0,0, self.ALPHA)
+        self.rend_text = self.FONT.render(self.text, True, self.color)
+        self.surface.fill((bg_color))
+        self.surface.blit(self.rend_text, (5,0))
+        surface.blit(self.surface, (x, self.y))
+
 class Hint():
     ALPHA = 180
     FONT = pg.font.Font('Fonts/rpg.otf', 40)

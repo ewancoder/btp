@@ -39,6 +39,7 @@ def gameLoop(surface):
         worldScreen.update(pers) #Load whole world current environment based on "pers"
         #NEED ASSURANCE
         worldScreen.loop()
+        pers.name == ''
         #place, move = worldScreen.loop() #Loop current world "snap" (until you move away or hit a monster)
         #print(pers.time)
         #if place != None:

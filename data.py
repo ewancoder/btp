@@ -9,7 +9,7 @@ class Data():
 
         self.place.append({
             'Id': 'introduction',
-            'Goto': 'House/OldManHouse'
+            'Goto': 'Forest/StumpOfDestiny'
         })
 
         self.introduction = [
@@ -26,6 +26,25 @@ class Data():
             'In such horrible times a boy was born, his mother died giving birth, father was long gone for war.',
             'But one old man with no name found the boy. He took him and taught to fight. He called him... [' + pers.name + ']...'
         ]
+
+        self.place.append({
+            'Id': 'Forest/StumpOfDestiny',
+            'Text': 'This is The mighty Stump of Destiny, historical relict found in these woods after the Great Sorrow. It gave life to many Dworaks after the slaughter, which then took care of those in need. They rebuild community of Elves and Humans, communed orks with dwarfs. And all this were possible because of a simple stump. Even small things could do a big difference.',
+            'Moves': [
+                ('Go left', (20,400), (-1,0), 'Forest/Grove'),
+                ('Go right', (-20,400), (1,0), 'test'),
+                ('Pray', (300,300), 'test', 'test')
+            ]
+        })
+
+        self.place.append({
+            'Id': 'Forest/Grove',
+            'Text': 'Small grove of fresh trees',
+            'Moves': [
+                ('Go left', (20,400), (-1,0), 'Village/WestGate'),
+                ('Go right', (-20,400), (1,0), 'Forest/StumpOfDestiny')
+            ]
+        })
 
         self.place.append({
             'Id': 'House/OldManHouse',

@@ -137,6 +137,7 @@ class World():
 
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
+        self.moves = []
         self.pers = pers
         #self.time = 0
         self.data.update(self.pers)
@@ -200,21 +201,26 @@ class World():
 
             if self.intro == False:
                 #REPROGRAM TO MOVE CHARACTER OVER SCREEN
-                e = self.inputBox.events(events)
-                if e!= None and e in self.PLACE['Move']:
-                    moveIndex = self.PLACE['Move'].index(e)
-                    move = next(item for item in self.data.place if item['Id'] == self.PLACE['Goto'][moveIndex])
-                    self.pers.time += move['Time'][moveIndex] if 'Time' in move else 10
-                    moveto = self.PLACE['Goto'][self.PLACE['Move'].index(e)]
-                    newplace = next(item for item in self.data.place if item['Id'] == moveto)
+
+                for move in self.PLACE['Moves']:
+                    self.moves.append(interface.Move(move[0], move[1]))
+
+                #OLD VERSION
+#                e = self.inputBox.events(events)
+#                if e!= None and e in self.PLACE['Move']:
+#                    moveIndex = self.PLACE['Move'].index(e)
+#                    move = next(item for item in self.data.place if item['Id'] == self.PLACE['Goto'][moveIndex])
+#                    self.pers.time += move['Time'][moveIndex] if 'Time' in move else 10
+#                    moveto = self.PLACE['Goto'][self.PLACE['Move'].index(e)]
+#                    newplace = next(item for item in self.data.place if item['Id'] == moveto)
                     #NEED ASSURANCE
-                    if self.PLACE != None:
-                        self.pers.place = moveto
-                        if 'Mobs' in newplace.keys():
-                            if random.randrange(0,100) < newplace['Mobs']['Chance']:
-                                self.pers = self.battleScreen.loop(self.pers)
-                    self.pers.save()
-                    self.update(self.pers)
+#                    if self.PLACE != None:
+#                        self.pers.place = moveto
+#                        if 'Mobs' in newplace.keys():
+#                            if random.randrange(0,100) < newplace['Mobs']['Chance']:
+#                                self.pers = self.battleScreen.loop(self.pers)
+#                    self.pers.save()
+#                    self.update(self.pers)
                     #return newplace, moveto
 
             #LOGIC FOR ALL SPRITES
@@ -231,6 +237,9 @@ class World():
             if self.intro == False:
                 #Remove this 'cause I don't need inputBox anymore (there will be floating text over objects)
                 self.inputBox.draw(self.surface)
+            
+            for move in self.moves:
+                move.draw(self.surface)
 
             pg.display.flip()
 
