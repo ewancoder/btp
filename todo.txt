@@ -1,0 +1,3 @@
+changeable images/music in main menu
+make i-see-you-back message when entering write name
+make i-see-you-back message when entering write name
