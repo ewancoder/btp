@@ -1,4 +1,5 @@
 import random #For Word X-positioning
+import data #for random words
 
 import pygame as pg
 
@@ -78,27 +79,87 @@ class Menu():
                     self.update()
 
 class Move():
-    ALPHA = 10
-    FONT = pg.font.Font('Fonts/rpg.otf', 30)
+    ALPHA = 130
+    A_TITLE_COLOR = (200,200,100)
+    TITLE_COLOR = (200,100,100)
+    FONT_COLOR = (200,200,200)
+    locked = -1
 
-    def __init__(self, text, xy):
+    def __init__(self, text, xy, index, visible=0):
+        self.allowed = True
+        self.visible = visible
+        self.index = index
         self.text = text
         (self.x, self.y) = xy
-        self.surface = pg.Surface((self.FONT.size(self.text)[0] + 10, self.FONT.size(self.text)[1]))
-        self.surface.set_alpha(self.ALPHA)
-        self.color = (200,100,100)
-        self.surface.set_alpha(self.ALPHA)
+        self.FONT = pg.font.Font('Fonts/rpg.otf', 20)
+        self.RECT = pg.Rect((0, 0, self.FONT.size(text)[0] + 10, self.FONT.size(text)[1]))
+        self.surface = pg.Surface(self.RECT.size, pg.SRCALPHA, 32)
+        self.rtext = random.choice(data.words) + ' ' + random.choice(data.words)
+        self.rRECT = pg.Rect((0, 0, self.FONT.size(self.rtext)[0] + 10, self.FONT.size(self.rtext)[1]))
+        self.rsurface = pg.Surface(self.rRECT.size, pg.SRCALPHA, 32)
 
-    def draw(self, surface):
+    def draw(self, surface, outx):
         if self.x < 0:
-            x = surface.get_width() - self.FONT.size(self.text)[0] + self.x
+            x = surface.get_width() - self.RECT.width + self.x
         else:
             x = self.x
-        bg_color = (0,0,0, self.ALPHA)
-        self.rend_text = self.FONT.render(self.text, True, self.color)
-        self.surface.fill((bg_color))
-        self.surface.blit(self.rend_text, (5,0))
-        surface.blit(self.surface, (x, self.y))
+        if self.visible != 0:
+            print(outx)
+            if outx > self.visible[0] and outx < self.visible[1]:
+                self.allowed = True
+                self.surface.fill((0,0,0, self.ALPHA))
+                self.rsurface.fill((0,0,0, self.ALPHA))
+                text = self.FONT.render(self.text, True, self.A_TITLE_COLOR)
+                rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
+                self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
+                self.rsurface.blit(rtext, ((self.rRECT.width - rtext.get_width()) / 2, 0))
+                surface.blit(self.surface, (x, self.y))
+                surface.blit(self.rsurface, (x, self.y + self.RECT.height))
+            elif abs(outx - self.visible[0]) < 130 or abs(outx - self.visible[1]) < 130:
+                self.allowed = False
+                minoutx = abs(outx - self.visible[0])
+                if abs(outx - self.visible[1]) < minoutx:
+                    minoutx = abs(outx - self.visible[1])
+                if minoutx == 0:
+                    minoutx = 1
+                self.surface.fill((0,0,0, int(self.ALPHA - abs(minoutx))))
+                self.rsurface.fill((0,0,0, int(self.ALPHA - abs(minoutx))))
+                text = self.FONT.render(self.text, True, self.TITLE_COLOR)
+                rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
+                self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
+                self.rsurface.blit(rtext, ((self.rRECT.width - rtext.get_width()) / 2, 0))
+                surface.blit(self.surface, (x, self.y))
+                surface.blit(self.rsurface, (x, self.y + self.RECT.height))
+            else:
+                self.allowed = False
+        else:
+            self.allowed = True
+            self.surface.fill((0,0,0, self.ALPHA))
+            self.rsurface.fill((0,0,0, self.ALPHA))
+            text = self.FONT.render(self.text, True, self.A_TITLE_COLOR)
+            rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
+            self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
+            self.rsurface.blit(rtext, ((self.rRECT.width - rtext.get_width()) / 2, 0))
+            surface.blit(self.surface, (x, self.y))
+            surface.blit(self.rsurface, (x, self.y + self.RECT.height))
+
+    def events(self, events):
+        if self.allowed:
+            for e in events:
+                if e.type == pg.KEYDOWN:
+                    if e.unicode.isalpha():
+                        if self.rtext.startswith(e.unicode):
+                            #rtext = random text
+                            self.rtext = self.rtext[1:]
+                            if self.rtext[0] == ' ':
+                                self.rtext = self.rtext[1:] + ' ' + random.choice(data.words)
+                                self.rRECT = pg.Rect((0, 0, self.FONT.size(self.rtext)[0] + 10, self.FONT.size(self.rtext)[1]))
+                                self.rsurface = pg.Surface(self.rRECT.size, pg.SRCALPHA, 32)
+                                return -1
+                            else:
+                                return self.index
+                    if e.key == pg.K_ESCAPE:
+                        return -1
 
 class Hint():
     ALPHA = 180

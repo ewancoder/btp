@@ -31,20 +31,29 @@ class Data():
             'Id': 'Forest/StumpOfDestiny',
             'Text': 'This is The mighty Stump of Destiny, historical relict found in these woods after the Great Sorrow. It gave life to many Dworaks after the slaughter, which then took care of those in need. They rebuild community of Elves and Humans, communed orks with dwarfs. And all this were possible because of a simple stump. Even small things could do a big difference.',
             'Moves': [
-                ('Go left', (20,400), (-1,0), 'Forest/Grove'),
-                ('Go right', (-20,400), (1,0), 'test'),
-                ('Pray', (300,300), 'test', 'test')
+                ('Go left', (20,400), 'left', 'Forest/Grove'),
+                ('Go right', (-20,400), 'right', 'test'),
+                ('Pray', (300,300), 7, 'test')
             ]
         })
 
         self.place.append({
             'Id': 'Forest/Grove',
-            'Text': 'Small grove of fresh trees',
+            'Text': 'Small grove of fresh trees, plentiful of branches, logs and flowers.',
             'Moves': [
-                ('Go left', (20,400), (-1,0), 'Village/WestGate'),
-                ('Go right', (-20,400), (1,0), 'Forest/StumpOfDestiny')
+                ('Go left', (20,400), 'left', 'Village/WestGate'),
+                ('Go right', (-20,400), 'right', 'Forest/StumpOfDestiny'),
+                ('To the Grove', (300,300), 7, 'Forest/CheeryGrove', (-60,-20))
             ]
         })
+
+        self.place.append({
+            'Id': 'Forest/CheeryGrove',
+            'Text': 'Light and cheerful grove goes right onto the road to Oak Village.',
+            'Moves': [
+                ('Go to road', (300,100), 7, 'Forest/RoadToOakVillage')
+                ]
+            })
 
         self.place.append({
             'Id': 'House/OldManHouse',

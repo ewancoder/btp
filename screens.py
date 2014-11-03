@@ -57,7 +57,7 @@ class Menu():
         self.hints.add('Use J/K to move Down/Up', 'jk')
         self.hints.add('Use L (or Enter) to switch', 'lenter', 60)
         self.hints.add('Version 0.01 alpha', 'version', 120)
-        
+
     def loop(self):
         clock = pg.time.Clock()
         #Returns its value (exits Menu) if not ''
@@ -137,6 +137,12 @@ class World():
 
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
+        self.dx = 0
+        self.dy = 0
+        self.locked = -1 #for locking words-movement
+        #For image centered
+        self.x = -300
+        self.y = -200
         self.moves = []
         self.pers = pers
         #self.time = 0
@@ -175,6 +181,15 @@ class World():
                 pg.mixer.stop()
             music.play()
 
+        try:
+            for ind, move in enumerate(self.PLACE['Moves']):
+                try:
+                    self.moves.append(interface.Move(move[0], move[1], ind, move[4]))
+                except:
+                    self.moves.append(interface.Move(move[0], move[1], ind))
+        except:
+            pass
+
     def loop(self):
         clock = pg.time.Clock()
 
@@ -186,7 +201,6 @@ class World():
                     exit()
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_RETURN and self.intro == True:
-                        #NEED ASSURANCE
                         if self.PLACE != None:
                             self.pers.place = self.PLACE['Goto']
                             if 'Mobs' in self.PLACE.keys():
@@ -194,16 +208,37 @@ class World():
                                     self.pers = self.battleScreen.loop(self.pers)
                         self.pers.save()
                         self.update(self.pers)
-                        #return self.PLACE, None
                     elif e.key == pg.K_F1:
                         self.message.hid_timer = 300
                         self.message.hidden = not self.message.hidden
+            for index, move in enumerate(self.moves):
+                if self.locked == index or self.locked == -1:
+                    ind = move.events(events)
+                    if ind != None:
+                        if ind == -1:
+                            move = self.PLACE['Moves'][oldind]
+                        else:
+                            move = self.PLACE['Moves'][ind]
+                        #KOSTYL
+                        oldind = ind
+                        self.locked = ind
+                        def load():
+                            self.pers.place = move[3]
+                            self.pers.save()
+                            self.update(self.pers)
+                        if move[2] == 'left':
+                            self.dx -= 1 * self.pers.speed
+                            if self.x >= 10:
+                                load()
+                        elif move[2] == 'right':
+                            self.dx += 1 * self.pers.speed
+                            print(self.x)
+                            if self.x <= -900:
+                                load()
 
             if self.intro == False:
+                pass
                 #REPROGRAM TO MOVE CHARACTER OVER SCREEN
-
-                for move in self.PLACE['Moves']:
-                    self.moves.append(interface.Move(move[0], move[1]))
 
                 #OLD VERSION
 #                e = self.inputBox.events(events)
@@ -225,12 +260,25 @@ class World():
 
             #LOGIC FOR ALL SPRITES
 
+            if self.dx > 0:
+                self.x -= 1 * int(self.pers.speed / 5)
+                self.dx -= 1 * int(self.pers.speed / 5)
+            if self.dx < 0:
+                self.x += 1 * int(self.pers.speed / 5)
+                self.dx += 1 * int(self.pers.speed / 5)
+            if self.dy > 0:
+                self.y -= 1 * int(self.pers.speed / 5)
+                self.dy -= 1 * int(self.pers.speed / 5)
+            if self.dy < 0:
+                self.y += 1 * int(self.pers.speed / 5)
+                self.dy += 1 * int(self.pers.speed / 5)
+
             self.surface.fill(0)
             if self.intro == True:
-                self.surface.blit(self.bg, (-5,-5))
+                self.surface.blit(self.bg, (-10,-10))
             else:
                 #Should calculate exact position
-                self.surface.blit(self.bg, (-300,-5))
+                self.surface.blit(self.bg, (self.x,self.y))
                 #DRAW ALL SPRITES
 
             self.message.draw(self.text)
@@ -239,7 +287,7 @@ class World():
                 self.inputBox.draw(self.surface)
             
             for move in self.moves:
-                move.draw(self.surface)
+                move.draw(self.surface, self.x)
 
             pg.display.flip()
 

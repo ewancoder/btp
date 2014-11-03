@@ -16,6 +16,9 @@ class Pers():
     maxhp = 200
     atk = 4
 
+    #Speed of movement
+    speed = 10
+
     #Dynamic characteristics
     hp = maxhp
 

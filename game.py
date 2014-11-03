@@ -37,17 +37,8 @@ def gameLoop(surface):
             loaded = True
 
         worldScreen.update(pers) #Load whole world current environment based on "pers"
-        #NEED ASSURANCE
         worldScreen.loop()
         pers.name == ''
-        #place, move = worldScreen.loop() #Loop current world "snap" (until you move away or hit a monster)
-        #print(pers.time)
-        #if place != None:
-        #    pers.place = place['Goto'] if  move == None else move
-        #    if 'Mobs' in place.keys():
-        #        if random.randrange(0, 100) < place['Mobs']['Chance']:
-        #            pers = battleScreen.loop(pers)
-        #pers.save()
 
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)
