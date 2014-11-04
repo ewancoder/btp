@@ -65,7 +65,7 @@ class Menu():
         self.hints.add('Use L (or Enter) to switch', 'lenter', 60)
         self.hints.add('Version 0.01 alpha', 'version', 120)
 
-    def loop(self, settings): #settings is settings object (current state already, save-loaded outside, in game.py file)
+    def loop(self, settings, oldname=''): #settings is settings object (current state already, save-loaded outside, in game.py file)
         clock = pg.time.Clock()
         #Returns its value (exits Menu) if not ''
         self.ret = ''
@@ -84,6 +84,8 @@ class Menu():
                         self.hints.hide('jk')
                     elif e.key == pg.K_l or e.key == pg.K_RETURN:
                         self.hints.hide('lenter')
+                    elif e.key == pg.K_F12 and oldname != '':
+                        self.ret = 'back_' + oldname
             toggle = self.menu.events(events)
             if toggle != None:
                 self.ret = toggle
@@ -210,8 +212,10 @@ class World():
             pass
 
         try:
-            for ind, hint in enumerate(self.PLACE['Hints']):
-                self.hints.add(hint, '', ind*60)
+            if self.PLACE['Id'] not in pers.hints:
+                for ind, hint in enumerate(self.PLACE['Hints']):
+                    self.hints.add(hint, '', ind*60)
+                pers.hints.append(self.PLACE['Id'])
         except:
             pass
 

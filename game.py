@@ -26,12 +26,17 @@ def gameLoop(surface):
     loginScreen = screens.Login(surface)
     worldScreen = screens.World(surface)
 
+    oldname = '' #for saving pers state meanwhile in menu
+
     while True:
         while pers.name == '':
             loaded = False
-            menu = menuScreen.loop(settings)
+            menu = menuScreen.loop(settings, oldname)
             if menu == 'login':
                 pers.name = loginScreen.loop()
+            elif menu == 'back_' + oldname:
+                pers.name = oldname
+                loaded = True
             else:
                 setattr(settings, menu, not getattr(settings, menu))
                 settings = settings.save()
@@ -47,6 +52,8 @@ def gameLoop(surface):
 
         worldScreen.update(pers) #Load whole world current environment based on "pers"
         worldScreen.loop(settings)
+        oldname = pers.name
+        pers.name = ''
 
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)
