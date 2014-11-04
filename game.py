@@ -12,7 +12,7 @@ import classes
 import screens
 
 CAPTION = 'Big Typernatural Project'
-SIZE = (1000, 700)
+SIZE = (1366, 768)
 
 def gameLoop(surface):
     settings = classes.Settings()
@@ -26,22 +26,25 @@ def gameLoop(surface):
     loginScreen = screens.Login(surface)
     worldScreen = screens.World(surface)
 
+    name = '' #Actual name of a player (not pers.name because we need to clean mess after reloading to another pers)
     oldname = '' #for saving pers state meanwhile in menu
 
     while True:
-        while pers.name == '':
+        while name == '':
             loaded = False
             menu = menuScreen.loop(settings, oldname)
             if menu == 'login':
-                pers.name = loginScreen.loop()
+                name = loginScreen.loop()
             elif menu == 'back_' + oldname:
-                pers.name = oldname
+                name = oldname
                 loaded = True
             else:
                 setattr(settings, menu, not getattr(settings, menu))
                 settings = settings.save()
 
         if not loaded:
+            pers = classes.Pers()
+            pers.name = name
             if os.path.isfile('Saves/' + pers.name):
                 pers = pers.load()
             else:
@@ -52,8 +55,8 @@ def gameLoop(surface):
 
         worldScreen.update(pers) #Load whole world current environment based on "pers"
         worldScreen.loop(settings)
-        oldname = pers.name
-        pers.name = ''
+        oldname = name
+        name = ''
 
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)

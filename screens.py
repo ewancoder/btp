@@ -7,6 +7,8 @@ import classes
 import data
 import interface
 
+SIZE = (1400,800)
+
 class Hints():
     def __init__(self, offset=0):
         #Need to use __init__ for different Hints instances for menu/login/world/battle
@@ -41,7 +43,7 @@ class Hints():
             pass
 
 class Menu():
-    BG = pg.image.load('Images/menu.jpg')
+    BG = pg.transform.scale(pg.image.load('Images/menu.jpg'), SIZE)
     MUSIC = pg.mixer.Sound('Music/menu.ogg')
     
     def __init__(self, surface):
@@ -102,7 +104,7 @@ class Menu():
 
 class Login():
     TEXT = 'Tell me your name, Stranger!\nIf you belong to this place, you\'ll find yourself into the place you left behind last time, otherwise you shall begin your journey in the forest of damned...'
-    BG = pg.image.load('Images/login.jpg')
+    BG = pg.transform.scale(pg.image.load('Images/login.jpg'), SIZE)
 
     def __init__(self, surface):
         self.message = interface.Message(surface)
@@ -176,10 +178,10 @@ class World():
                 self.text = getattr(self.data, eval('place'))[self.introIndex]
                 if len(getattr(self.data, eval('place'))[self.introIndex][1]) != 1: #Because it grabs one letter other way
                     self.text = getattr(self.data, eval('place'))[self.introIndex][0]
-                    self.bg = pg.image.load('Images/' + getattr(self.data, eval('place'))[self.introIndex][1] + '.jpg')
+                    self.bg = pg.transform.scale(pg.image.load('Images/' + getattr(self.data, eval('place'))[self.introIndex][1] + '.jpg'), SIZE)
                 else:
                     self.text = getattr(self.data, eval('place'))[self.introIndex]
-                    self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
+                    self.bg = pg.transform.scale(pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg'), SIZE)
                 if self.introIndex+1 < len(getattr(self.data, eval('place'))):
                     self.introIndex += 1
                 else:
@@ -193,7 +195,7 @@ class World():
             self.intro = False
             place = self.pers.place
             self.PLACE = next(item for item in self.data.place if item['Id'] == place)
-            self.bg = pg.image.load('Images/' + place + '.jpg')
+            self.bg = pg.transform.scale(pg.image.load('Images/' + place + '.jpg'), SIZE)
             self.text = self.PLACE['Text']
             musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
             #self.time += self.PLACE['Time'] if 'Time' in self.PLACE.keys() else 10
@@ -338,7 +340,7 @@ class Battle():
         self.surface = surface
 
     def loop(self, pers):
-        self.bg = pg.image.load('Images/Battle/' + os.path.basename(os.path.dirname(pers.place)) + '.jpg')
+        self.bg = pg.transform.scale(pg.image.load('Images/Battle/' + os.path.basename(os.path.dirname(pers.place)) + '.jpg'), SIZE)
 
         clock = pg.time.Clock()
         mob = classes.Mob()
