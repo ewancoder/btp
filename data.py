@@ -8,7 +8,7 @@ class Data():
 
         self.place.append({
             'Id': 'introduction',
-            'Goto': 'Forest/StumpOfDestiny'
+            'Goto': 'Forest/StumpOfDworaks'
         })
 
         self.introduction = [
@@ -27,40 +27,47 @@ class Data():
         ]
 
         self.place.append({
-            'Id': 'Forest/StumpOfDestiny',
-            'Text': 'This is The mighty Stump of Destiny, historical relict found in these woods after the Great Sorrow. It gave life to many Dworaks after the slaughter, which then took care of those in need. They rebuild community of Elves and Humans, communed orks with dwarfs. And all this were possible because of a simple stump. Even small things could do a big difference.',
+            'Id': 'Forest/StumpOfDworaks',
+            'Text': 'This is The mighty Stump of Dworaks, historical relict found in these woods after the Great Sorrow. It gave life to many Dworaks after the Moonlight slaughter, which then took care of those in need. They rebuild community of Elves and Humans, communed Orks with Dwarfs. And all this were possible because of a simple stump. They say, "Even small things could do a big difference"...',
             'Moves': [
-                ('Go left', 'left', 'Forest/Grove')
+                ('Small grove to the left', 'left', 'Forest/SunnyGrove')
             ],
             'Hints': ('Type white text under yellow captions to move',
                       'You will move to another location when progress bar is full',
-                      'o')
+                      'Once you will master your running skills, you could move faster')
         })
 
         self.place.append({
-            'Id': 'Forest/Grove',
-            'Text': 'Small grove of fresh trees, plentiful of branches, logs and flowers.',
+            'Id': 'Forest/SunnyGrove',
+            'Text': 'Small grove of fresh trees, plentiful of branches, logs and flowers. I can surely rest here.',
             'Moves': [
-                ('Go right', 'right', 'Forest/StumpOfDestiny'),
-                ('Go left', 'left', ''),
-                ('To the grove', 'top', 'Forest/StumpOfDestiny'),
-                ('To unknown lands', 'bottom', 20, '')
+                ('Go right, to the Stump of Dworaks', 'right', 'Forest/StumpOfDworaks'),
+                ('Go left, to the Moonshine lake', 'left', 'Forest/MoonshineLake'),
+                ('To the road', 'top', 'Forest/OakVillageRoad'),
+                ('To the Dark forest', 'bottom', 'Forest/DarkForestEntrance')
             ]
         })
 
         self.place.append({
-            'Id': 'Forest/CheeryGrove',
-            'Text': 'Light and cheerful grove goes right onto the road to Oak Village.',
+            'Id': 'Forest/MoonshineLake',
+            'Text': 'Moonshine lake is the only source of clean water out there.',
             'Moves': [
-                ('Go here', (300,300), 'top', 'Forest/Grove', (-60,-20)),
-                ('Go to road', (300,100), 7, 'Forest/RoadToOakVillage', (-60,-20))
+                ('Back to grove', 'bottom', 'Forest/SunnyGrove')
             ]
         })
 
         self.place.append({
-            'Id': 'Forest/RoadToOakVillage',
-            'Text': 'You can\'t go further because I\'ve not developed it yet',
+            'Id': 'Forest/DarkForestEntrance',
+            'Text': 'This is a very dangerous place indeed. Many tried to conquer its posessions, but none have left alive',
             'Moves': [
-                ('To the grove', (400,300), 'bottom', 'Forest/CheeryGrove', (-60,-20))
-                ]
-            })
+                ('Back to grove', 'bottom', 'Forest/SunnyGrove')
+            ]
+        })
+
+        self.place.append({
+            'Id': 'Forest/OakVillageRoad',
+            'Text': 'This road leads to the Oak village, the place where I grew up',
+            'Moves': [
+                ('Back to grove', 'bottom', 'Forest/SunnyGrove')
+            ]
+        })

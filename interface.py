@@ -95,7 +95,7 @@ class ProgressBar():
         surface.blit(self.surface, (x, y))
 
 class Move():
-    ALPHA = 130
+    ALPHA = 90
     A_TITLE_COLOR = (200,200,100) #Activated title
     TITLE_COLOR = (200,100,100)
     FONT_COLOR = (200,200,200)
@@ -125,7 +125,7 @@ class Move():
         for i in range(4):
             self.rtext = self.rtext + ' ' + self.randomWord()
 
-        self.biggerx = self.FONT.size(self.text)[0] * 2
+        self.biggerx = self.FONT.size(self.text)[0] + 20
 
         self.RECT = pg.Rect((0, 0, self.biggerx, self.FONT.size(text)[1]))
         self.surface = pg.Surface(self.RECT.size, pg.SRCALPHA, 32)
@@ -222,7 +222,9 @@ class Hint():
 
         if self.hide == True:
             if self.alpha > 0:
-                self.alpha -= 4
+                self.alpha -= 8
+                if self.alpha < 0:
+                    self.alpha = 0
 
         if self.shift > 0:
             self.shift -= 1

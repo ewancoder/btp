@@ -133,6 +133,9 @@ class Login():
 
 class World():
     def __init__(self, surface):
+        self.t_counter = 0 #Transition counter (255 -> 0)
+        self.started = False #Kostyl, if True - works 1 time for long black-intro in game world
+
         self.data = data.Data()
         self.introIndex = 0
         self.musicOldName = ''
@@ -141,20 +144,24 @@ class World():
         self.battleScreen = Battle(surface)
         self.hints = Hints(interface.Message.HEIGHT + 10)
         self.hints.add('Use F1 to hide/restore message window', 'F1')
-        self.hints.add('Use Backspace to hide a hint like this', 'Hints', 240)
+        self.hints.add('Use Backspace to hide a hint like this', 'Hints', 60)
 
     #Passing pers, and not persPlace, just for future extension
     def update(self, pers):
         self.dx = 0
         self.dy = 0
         self.locked = -1 #for locking words-movement
-        #For image centered
-        self.x = -300
-        self.y = -200
         self.moves = []
         self.pers = pers
         #self.time = 0
         self.data.update(self.pers)
+
+        try:
+            self.oldbg = self.bg
+            self.t_counter = 255
+        except:
+            self.t_counter = 0
+
         if self.pers.place[:5] == 'intro':
             self.intro = True
             place = self.pers.place
@@ -172,8 +179,11 @@ class World():
                 else:
                     self.introIndex = 0
                     self.PLACE = next(item for item in self.data.place if item['Id'] == self.pers.place)
+                    self.t_counter = 255
+                    self.started = True
             musicName = place
         else:
+            self.started = False
             self.intro = False
             place = self.pers.place
             self.PLACE = next(item for item in self.data.place if item['Id'] == place)
@@ -194,6 +204,10 @@ class World():
                 self.moves.append(interface.Move(move[0], move[1], ind))
         except:
             pass
+
+        #For image centered
+        self.x = (self.surface.get_width() / 2) - (self.bg.get_width() / 2)
+        self.y = (self.surface.get_height() / 2) - (self.bg.get_height() / 2)
 
     def loop(self):
         clock = pg.time.Clock()
@@ -233,14 +247,9 @@ class World():
                         else:
                             if moveLocal[1] == 'left':
                                 if self.x < -10:
-                                    self.dx -= 2 * self.pers.speed
-                                else:
-                                    self.x = -10
+                                    self.dx -= 5 * self.pers.speed
                             elif moveLocal[1] == 'right':
-                                if self.x > self.surface.get_width() - self.bg.get_width() - 10:
-                                    self.dx += 2 * self.pers.speed
-                                else:
-                                    self.x = self.surface.get_width() - self.bg.get_width() - 10
+                                self.dx += 5 * self.pers.speed
 
             if self.intro == False:
                 pass
@@ -249,25 +258,45 @@ class World():
             #LOGIC FOR ALL SPRITES
 
             if self.dx > 0:
-                self.x -= 1
+                if self.x > self.surface.get_width() - self.bg.get_width() - 40:
+                    self.x -= 1
+                else:
+                    self.x = self.surface.get_width() - self.bg.get_width() - 40
                 self.dx -= 1
             if self.dx < 0:
-                self.x += 1
+                if self.x < -10:
+                    self.x += 1
+                else:
+                    self.x = -10
                 self.dx += 1
-            if self.dy > 0:
-                self.y -= 1
-                self.dy -= 1
-            if self.dy < 0:
-                self.y += 1
-                self.dy += 1
+
+            #if self.dy > 0:
+            #    self.y -= 1
+            #    self.dy -= 1
+            #if self.dy < 0:
+            #    self.y += 1
+            #    self.dy += 1
 
             self.surface.fill(0)
             if self.intro == True:
-                self.surface.blit(self.bg, (-10,-10))
+                x = -10
+                y = -10
+                try:
+                    self.surface.fill((255,255,255))
+                    self.oldbg.set_alpha(self.t_counter)
+                    self.surface.blit(self.oldbg, (x,y))
+                except:
+                    pass
             else:
                 #Should calculate exact position
-                self.surface.blit(self.bg, (self.x,self.y))
-                #DRAW ALL SPRITES
+                x = self.x
+                y = self.y
+
+            self.bg.set_alpha(255-self.t_counter)
+            self.surface.blit(self.bg, (x,y))
+            self.t_counter -= 20
+
+            #DRAW ALL SPRITES
 
             self.message.draw(self.text)
             for move in self.moves:
