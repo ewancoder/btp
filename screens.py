@@ -125,7 +125,7 @@ class Login():
                     if e.key == pg.K_ESCAPE:
                         return ''
                     elif e.key == pg.K_F1:
-                        self.message.hid_timer = 300
+                        self.message.hid_timer = 500
                         self.message.hidden = not self.message.hidden
             name = self.parchment.events(events) #inputEvent
             if name not in (None, ''):
@@ -214,10 +214,13 @@ class World():
             pass
 
         try:
-            if self.PLACE['Id'] not in pers.hints:
+            if self.PLACE['Id'] not in self.pers.hints.split():
                 for ind, hint in enumerate(self.PLACE['Hints']):
                     self.hints.add(hint, '', ind*60)
-                pers.hints.append(self.PLACE['Id'])
+                #self.pers.hints.append(self.PLACE['Id'])
+                    #APPENDING DOESNT WORK SOMEHOW :(
+                print(self.pers.hints)
+                self.pers.hints = self.pers.hints + ', ' + self.PLACE['Id']
         except:
             pass
 
@@ -241,10 +244,10 @@ class World():
                             if 'Mobs' in self.PLACE.keys():
                                 if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
                                     self.pers = self.battleScreen.loop(self.pers)
-                        self.pers.save()
+                        self.pers = self.pers.save()
                         self.update(self.pers)
                     elif e.key == pg.K_F1:
-                        self.message.hid_timer = 300
+                        self.message.hid_timer = 500
                         self.message.hidden = not self.message.hidden
                     elif e.key == pg.K_BACKSPACE:
                         self.hints.hide()
@@ -275,7 +278,7 @@ class World():
             if self.away_counter > 10:
                 self.away_counter = 0
                 self.pers.place = moveLocal[2]
-                self.pers.save()
+                self.pers = self.pers.save()
                 self.update(self.pers)
 
             if self.intro == False:
@@ -285,10 +288,10 @@ class World():
             #LOGIC FOR ALL SPRITES
 
             if self.dx > 0:
-                if self.x > self.surface.get_width() - self.bg.get_width() - 40:
+                if self.x > self.surface.get_width() - self.bg.get_width() + 10:
                     self.x -= 1
                 else:
-                    self.x = self.surface.get_width() - self.bg.get_width() - 40
+                    self.x = self.surface.get_width() - self.bg.get_width() + 10
                 self.dx -= 1
             if self.dx < 0:
                 if self.x < -10:

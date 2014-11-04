@@ -111,7 +111,7 @@ class Move():
     A_TITLE_COLOR = (200,200,100) #Activated title
     TITLE_COLOR = (200,100,100)
     FONT_COLOR = (200,200,200)
-    FONT = pg.font.Font('Fonts/rpg.otf', 20)
+    FONT = pg.font.Font('Fonts/rpg.otf', 22)
 
     def randomWord(self):
         rand = ['qivjsf',
@@ -152,16 +152,16 @@ class Move():
     def draw(self, surface, outx):
         if self.style == 'right':
             if self.away == False:
-                self.x = surface.get_width() - self.biggerx - 10
+                self.x = surface.get_width() - self.biggerx - 30
             elif self.x < surface.get_width():
                 self.x += 30
-            self.y = 600
+            self.y = surface.get_height() - self.RECT.size[1]*2 - 60
         elif self.style == 'left':
             if self.away == False:
                 self.x = 20
             elif self.x > -self.biggerx:
                 self.x -= 30
-            self.y = 600
+            self.y = surface.get_height() - self.RECT.size[1]*2 - 60
         elif self.style == 'top':
             self.x = surface.get_width() / 2 - self.biggerx / 2
             if self.away == False:
@@ -171,7 +171,7 @@ class Move():
         elif self.style == 'bottom':
             self.x = surface.get_width() / 2 - self.biggerx / 2
             if self.away == False:
-                self.y = surface.get_height() - self.FONT.get_height()*2 - 10
+                self.y = surface.get_height() - self.RECT.size[1]*2 - 30
             elif self.y < surface.get_height():
                 self.y += 30
         #else:
@@ -263,7 +263,7 @@ class Hint():
 class Message():
     ALPHA = 130
     hidden = False
-    hid_timer = 300;
+    hid_timer = 500;
     FONT_COLOR = (200,200,200)
     HEIGHT = 220
 
@@ -314,20 +314,20 @@ class Message():
 
             self.surface.blit(surface, (self.X - self.hid_timer, 10))
             if self.hidden == False and self.hid_timer > 0:
-                self.hid_timer -=50
+                self.hid_timer -=100
             elif self.hidden == True:
-                self.hid_timer +=50
+                self.hid_timer +=100
 
 class Input():
     KEY_SOUND = pg.mixer.Sound('Sounds/click.ogg')
-    HEIGHT = 50
+    HEIGHT = 150
 
     def __init__(self, surface):
         self.prompt = ''
-        self.FONT = pg.font.Font('Fonts/rpg.ttf', 30)
+        self.FONT = pg.font.Font('Fonts/rpg.ttf', 90)
         self.WIDTH = surface.get_size()[0] / 2
         self.X = (surface.get_size()[0] - self.WIDTH) / 2
-        self.Y = surface.get_size()[1] - self.HEIGHT
+        self.Y = surface.get_size()[1]/1.3 - self.HEIGHT/2
         self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
 
     def draw(self, surface):

@@ -52,7 +52,7 @@ class Pers():
     ]
 
     #History of viewed hints
-    hints = []
+    hints = 'init'
 
     def save(self):
         with open('Saves/' + self.name, 'wb') as f:

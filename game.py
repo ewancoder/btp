@@ -47,6 +47,7 @@ def gameLoop(surface):
             pers.name = name
             if os.path.isfile('Saves/' + pers.name):
                 pers = pers.load()
+                print(pers.hints)
             else:
                 if not os.path.isdir('Saves'):
                     os.mkdir('Saves')
