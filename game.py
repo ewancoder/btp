@@ -15,17 +15,26 @@ CAPTION = 'Big Typernatural Project'
 SIZE = (1000, 700)
 
 def gameLoop(surface):
+    settings = classes.Settings()
+    try:
+        settings = settings.load()
+    except:
+        pass
+
     pers = classes.Pers()
     menuScreen = screens.Menu(surface)
     loginScreen = screens.Login(surface)
     worldScreen = screens.World(surface)
-    battleScreen = screens.Battle(surface)
 
     while True:
         while pers.name == '':
             loaded = False
-            if menuScreen.loop() == 'login':
+            menu = menuScreen.loop(settings)
+            if menu == 'login':
                 pers.name = loginScreen.loop()
+            else:
+                setattr(settings, menu, not getattr(settings, menu))
+                settings = settings.save()
 
         if not loaded:
             if os.path.isfile('Saves/' + pers.name):
@@ -37,8 +46,7 @@ def gameLoop(surface):
             loaded = True
 
         worldScreen.update(pers) #Load whole world current environment based on "pers"
-        worldScreen.loop()
-        pers.name == ''
+        worldScreen.loop(settings)
 
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)

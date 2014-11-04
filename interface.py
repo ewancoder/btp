@@ -1,6 +1,8 @@
 import random #For Word X-positioning
 import data #for random words
 
+import classes #for menu settings
+
 import pygame as pg
 
 class Menu():
@@ -17,6 +19,7 @@ class Menu():
     unsel_timer = 0   #30 for 1 sec --- sel. timer for cool effects
     sel_timer = 0
 
+
     def __init__(self, items):
         self.ITEMS = items
         self.update()
@@ -25,9 +28,9 @@ class Menu():
         self.out = 150
         self.selected = 0
         self.unselected = 0
-        self.items = [{'Label': i[0], 'Action': i[1]} for i in self.ITEMS[self.now]]
+        self.items = [{'Label': i[0], 'Action': i[1], 'Type': i[2]} for i in self.ITEMS[self.now]]
 
-    def draw(self, surface):
+    def draw(self, surface, settings):
         offset = 0 #Incremental variable for making y-difference
         for index, i in enumerate(self.items):
             if self.selected == index:
@@ -48,7 +51,13 @@ class Menu():
                     color = self.DCOLOR
             else:
                 color = self.DCOLOR
-            text = self.FONT.render(i['Label'], True, color)
+            if i['Type'] == 'checkbox':
+                if getattr(settings, i['Action']) == False:
+                    text = self.FONT.render('X ' + i['Label'], True, color)
+                else:
+                    text = self.FONT.render('O ' + i['Label'], True, color)
+            else:
+                text = self.FONT.render(i['Label'], True, color)
             if self.out > 0:
                 surface.blit(text, (self.X-self.out, self.Y + offset))
                 self.out -= 10
@@ -75,9 +84,12 @@ class Menu():
                         self.sel_timer = 40
                 elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
                     self.SELECT_SOUND.play()
-                    self.items[self.selected]['Action']()
+                    if self.items[self.selected]['Type'] == '':
+                        self.items[self.selected]['Action']()
+                    elif self.items[self.selected]['Type'] == 'checkbox':
+                        return self.items[self.selected]['Action']
                     self.update()
-
+                    
 class ProgressBar():
     ALPHA = 130
     HEIGHT = 4
@@ -115,6 +127,8 @@ class Move():
                 return word
 
     def __init__(self, text, style, index):
+        self.away = False #If true - moveaway with cool effect
+
         self.locked_color = 0 #RED-increment
         self.locked = False
         self.allowed = True #In focus, allow printing
@@ -137,21 +151,33 @@ class Move():
 
     def draw(self, surface, outx):
         if self.style == 'right':
-            x = surface.get_width() - self.biggerx - 10
-            y = 600
+            if self.away == False:
+                self.x = surface.get_width() - self.biggerx - 10
+            elif self.x < surface.get_width():
+                self.x += 30
+            self.y = 600
         elif self.style == 'left':
-            x = 20
-            y = 600
+            if self.away == False:
+                self.x = 20
+            elif self.x > -self.biggerx:
+                self.x -= 30
+            self.y = 600
         elif self.style == 'top':
-            x = surface.get_width() / 2 - self.biggerx / 2
-            y = Message.HEIGHT + 30
+            self.x = surface.get_width() / 2 - self.biggerx / 2
+            if self.away == False:
+                self.y = Message.HEIGHT + 30
+            elif self.y > -60:
+                self.y -= 30
         elif self.style == 'bottom':
-            x = surface.get_width() / 2 - self.biggerx / 2
-            y = surface.get_height() - self.FONT.get_height()*2 - 10
-        else:
-            x = 0
-            y = 0
-        self.progressBar.draw(surface, (x,y), self.progress)
+            self.x = surface.get_width() / 2 - self.biggerx / 2
+            if self.away == False:
+                self.y = surface.get_height() - self.FONT.get_height()*2 - 10
+            elif self.y < surface.get_height():
+                self.y += 30
+        #else:
+        #    self.x = 0
+        #    self.y = 0
+        self.progressBar.draw(surface, (self.x,self.y), self.progress)
 
         self.allowed = True #In focus, allow printing
         self.surface.fill((0,0,0, self.ALPHA))
@@ -164,8 +190,8 @@ class Move():
         rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
         self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
         self.rsurface.blit(rtext, (10, 0))
-        surface.blit(self.surface, (x, y))
-        surface.blit(self.rsurface, (x, y + self.RECT.height))
+        surface.blit(self.surface, (self.x, self.y))
+        surface.blit(self.rsurface, (self.x, self.y + self.RECT.height))
 
     def events(self, events):
         if self.allowed:
@@ -196,7 +222,8 @@ class Hint():
     def __init__(self, text, y=10, x=10, style='default', delay=0):
         self.text = str(text)
         self.x = x
-        self.y = y
+        self.y = y + 30
+        self.Y = y + 10
         self.alpha = 0
         self.surface = pg.Surface((self.FONT.size(self.text)[0] + 10, self.FONT.size(self.text)[1]))
         self.surface.set_alpha(0)
@@ -213,6 +240,8 @@ class Hint():
             x = surface.get_width() - self.surface.get_width() - self.x
             if self.alpha < self.ALPHA and self.hide == False:
                 self.alpha += 4
+            if self.y > self.Y:
+                self.y -= 1
             self.surface.set_alpha(self.alpha)
             bg_color = (0,0,0, self.alpha)
             self.rend_text = self.FONT.render(self.text, True, self.color)
@@ -229,6 +258,7 @@ class Hint():
         if self.shift > 0:
             self.shift -= 1
             self.y -= 1
+            self.Y -= 1
 
 class Message():
     ALPHA = 130

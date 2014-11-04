@@ -2,6 +2,21 @@
 
 import pickle
 
+class Settings():
+    hints = True
+
+    def save(self):
+        with open('settings', 'wb') as f:
+            pickle.dump(self, f)
+        print('Settings saved')
+        return(self)
+
+    def load(self):
+        with open('settings', 'rb') as f:
+            self = pickle.load(f)
+        print('Settings loaded')
+        return(self)
+
 class Pers():
     #If name is '' - show main menu screen
     name = ''

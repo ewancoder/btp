@@ -16,12 +16,15 @@ class Hints():
         self.offset = offset
 
     def add(self, text, index, delay=0):
-        self.hints.append(interface.Hint(text, self.offset + len(self.hints)*40 + 10, delay=delay))
+        if text == '':
+            text = 'H' + str(len(self.hints))
+        self.hints.append(interface.Hint(text, self.offset + (len(self.hints) - self.count)*40, delay=delay))
         self.ind.append(index)
 
-    def draw(self, surface):
-        for hint in self.hints:
-            hint.draw(surface)
+    def draw(self, surface, settings): #for settings.hints
+        if settings.hints == True:
+            for hint in self.hints:
+                hint.draw(surface)
 
     def hide(self, index=0):
         try:
@@ -30,13 +33,11 @@ class Hints():
             else:
                 ind = self.ind.index(index)
             self.hints[ind].hide = True
-            print(self.count)
             self.count += 1
             for i in range(ind+1,len(self.hints)):
                 self.hints[i].shift = 40
             self.ind[ind] = "hidden"
         except:
-            print('error in "hide" method of Hints, line 42 of screens.py')
             pass
 
 class Menu():
@@ -46,13 +47,13 @@ class Menu():
     def __init__(self, surface):
         self.surface = surface
         MAIN_MENU = (
-            ['Start / Load Game', lambda: setattr(self, 'ret', 'login')],
-            ['Settings', lambda: setattr(self.menu, 'now', 1)],
-            ['Quit', lambda: quit()]
+            ['Start / Load Game', lambda: setattr(self, 'ret', 'login'), ''],
+            ['Settings', lambda: setattr(self.menu, 'now', 1), ''],
+            ['Quit', lambda: quit(), '']
         )
         SETTINGS_MENU = (
-            ['This is settings example', lambda: print('There will be settings.')],
-            ['Back', lambda: setattr(self.menu, 'now', 0)]
+            ['Show hints', 'hints', 'checkbox'],
+            ['Back', lambda: setattr(self.menu, 'now', 0), '']
         )
         MENU = (
             MAIN_MENU,
@@ -64,7 +65,7 @@ class Menu():
         self.hints.add('Use L (or Enter) to switch', 'lenter', 60)
         self.hints.add('Version 0.01 alpha', 'version', 120)
 
-    def loop(self):
+    def loop(self, settings): #settings is settings object (current state already, save-loaded outside, in game.py file)
         clock = pg.time.Clock()
         #Returns its value (exits Menu) if not ''
         self.ret = ''
@@ -81,17 +82,19 @@ class Menu():
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_j or e.key == pg.K_k:
                         self.hints.hide('jk')
-                    if e.key == pg.K_l or e.key == pg.K_RETURN:
+                    elif e.key == pg.K_l or e.key == pg.K_RETURN:
                         self.hints.hide('lenter')
-            self.menu.events(events)
+            toggle = self.menu.events(events)
+            if toggle != None:
+                self.ret = toggle
 
             if not pg.mixer.get_busy():
                 self.MUSIC.play(-1)
 
             self.surface.fill(0)
             self.surface.blit(self.BG, (-10, -10))
-            self.menu.draw(self.surface)
-            self.hints.draw(self.surface)
+            self.menu.draw(self.surface, settings) #Pass settings to next cycle (which draws based on True/False value)
+            self.hints.draw(self.surface, settings)
 
             pg.display.flip()
 
@@ -135,6 +138,7 @@ class World():
     def __init__(self, surface):
         self.t_counter = 0 #Transition counter (255 -> 0)
         self.started = False #Kostyl, if True - works 1 time for long black-intro in game world
+        self.away_counter = 0
 
         self.data = data.Data()
         self.introIndex = 0
@@ -205,11 +209,17 @@ class World():
         except:
             pass
 
+        try:
+            for ind, hint in enumerate(self.PLACE['Hints']):
+                self.hints.add(hint, '', ind*60)
+        except:
+            pass
+
         #For image centered
         self.x = (self.surface.get_width() / 2) - (self.bg.get_width() / 2)
         self.y = (self.surface.get_height() / 2) - (self.bg.get_height() / 2)
 
-    def loop(self):
+    def loop(self, settings):
         clock = pg.time.Clock()
 
         while True:
@@ -232,6 +242,8 @@ class World():
                         self.message.hidden = not self.message.hidden
                     elif e.key == pg.K_BACKSPACE:
                         self.hints.hide()
+                    elif e.key == pg.K_F12:
+                        return
             for index, move in enumerate(self.moves):
                 if self.locked == index or self.locked == -1:
                     ind = move.events(events)
@@ -241,15 +253,24 @@ class World():
                         if ind != -1:
                             move.progress += .01 * self.pers.speed
                         if move.progress >= 1:
-                            self.pers.place = moveLocal[2]
-                            self.pers.save()
-                            self.update(self.pers)
+                            #for move in self.moves:
+                            #    move.away = True
+                            move.away = True #Moves only an item you chose
+                            self.away_counter += 1
                         else:
                             if moveLocal[1] == 'left':
                                 if self.x < -10:
                                     self.dx -= 5 * self.pers.speed
                             elif moveLocal[1] == 'right':
                                 self.dx += 5 * self.pers.speed
+
+            if self.away_counter > 0:
+                self.away_counter += 1
+            if self.away_counter > 10:
+                self.away_counter = 0
+                self.pers.place = moveLocal[2]
+                self.pers.save()
+                self.update(self.pers)
 
             if self.intro == False:
                 pass
@@ -292,7 +313,10 @@ class World():
                 x = self.x
                 y = self.y
 
-            self.bg.set_alpha(255-self.t_counter)
+            if self.away_counter > 0:
+                self.bg.set_alpha(255 - self.away_counter * 20)
+            else:
+                self.bg.set_alpha(255-self.t_counter)
             self.surface.blit(self.bg, (x,y))
             self.t_counter -= 20
 
@@ -301,7 +325,7 @@ class World():
             self.message.draw(self.text)
             for move in self.moves:
                 move.draw(self.surface, self.x)
-            self.hints.draw(self.surface)
+            self.hints.draw(self.surface, settings)
 
             pg.display.flip()
 
