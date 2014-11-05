@@ -61,7 +61,10 @@ class Data():
             'Text': 'This is a very dangerous place indeed. Many tried to conquer its posessions, but none have left alive',
             'Moves': [
                 ('Back to grove', 'bottom', 'Forest/SunnyGrove')
-            ]
+            ],
+            'Mobs': {
+                'Chance': 100
+            }
         })
 
         self.place.append({

@@ -29,10 +29,10 @@ class Pers():
     level = 1
     maxhp = 20
     maxhp = 200
-    atk = 4
+    atk = 30
 
     #Speed of movement
-    speed = 2
+    speed = 5
 
     #Dynamic characteristics
     hp = maxhp

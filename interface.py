@@ -352,7 +352,7 @@ class Input():
 class Word():
     def __init__(self, surface, word):
         self.BG_COLOR = (0,0,0, 80)
-        self.FONT = pg.font.Font('Fonts/comic.ttf', 40)
+        self.FONT = pg.font.Font('Fonts/rpg.otf', 40)
         self.HI_COLOR = (200,100,100)
         self.DEF_COLOR = (100,100,200)
 
@@ -382,7 +382,7 @@ class Notify():
         self.x = x
         self.y = y
         self.alpha = 255
-        self.FONT = pg.font.Font('Fonts/comic.ttf', 40)
+        self.FONT = pg.font.Font('Fonts/rpg.otf', 40)
         self.word = str(word)
         self.surface = pg.Surface((self.FONT.size(self.word)[0], self.FONT.size(self.word)[1]))
         self.surface.set_alpha(150)
@@ -419,11 +419,11 @@ class BattleStats():
         self.surface.append(pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA))
         self.picture = []
         self.picture.append(pg.Surface((self.WIDTH * 8/10, self.HEIGHT / 1.3)))
-        self.picture[0].blit(pg.image.load('Images/Pers.png'), (0,0))
-        self.picture[0].set_colorkey((255,255,255))
+        self.picture[0].blit(pg.transform.scale(pg.image.load('Images/Pers.png'), (500,500)), (0,0))
+        self.picture[0].set_colorkey(0)
         self.picture.append(pg.Surface((self.WIDTH * 8/10, self.HEIGHT / 1.3)))
-        self.picture[1].set_colorkey((255,255,255))
-        self.picture[1].blit(pg.image.load('Images/Mobs/' + mob.name + '.png'), (0,0))
+        self.picture[1].set_colorkey(0)
+        self.picture[1].blit(pg.transform.scale(pg.image.load('Images/Mobs/' + mob.name + '.png'), (500,500)), (0,0))
 
     def draw(self, surface, pers, mob):
         color = (200,100,100)

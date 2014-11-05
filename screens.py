@@ -228,6 +228,14 @@ class World():
         self.x = (self.surface.get_width() / 2) - (self.bg.get_width() / 2)
         self.y = (self.surface.get_height() / 2) - (self.bg.get_height() / 2)
 
+        #Begin battle (testing section)
+        try:
+            if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
+                self.pers = self.battleScreen.loop(self.pers, self.bg)
+        except:
+            pass
+
+
     def loop(self, settings):
         clock = pg.time.Clock()
 
@@ -241,9 +249,6 @@ class World():
                     if e.key == pg.K_RETURN and self.intro == True:
                         if self.PLACE != None:
                             self.pers.place = self.PLACE['Goto']
-                            if 'Mobs' in self.PLACE.keys():
-                                if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
-                                    self.pers = self.battleScreen.loop(self.pers)
                         self.pers = self.pers.save()
                         self.update(self.pers)
                     elif e.key == pg.K_F1:
@@ -342,8 +347,9 @@ class Battle():
     def __init__(self, surface):
         self.surface = surface
 
-    def loop(self, pers):
-        self.bg = pg.transform.scale(pg.image.load('Images/Battle/' + os.path.basename(os.path.dirname(pers.place)) + '.jpg'), SIZE)
+    def loop(self, pers, bg):
+        #self.bg = pg.transform.scale(pg.image.load('Images/Battle/' + os.path.basename(os.path.dirname(pers.place)) + '.jpg'), SIZE)
+        self.bg = bg
 
         clock = pg.time.Clock()
         mob = classes.Mob()
@@ -357,7 +363,7 @@ class Battle():
         try:
             spd = next(item for item in d.place if item['Id'] == pers.place)['Mobs']['Speed']
         except:
-            spd = 0
+            spd = 1
         speed.append(spd)
 
         self.stats = interface.BattleStats(self.surface, mob)
