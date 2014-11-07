@@ -141,7 +141,7 @@ class Login():
 class World():
     def __init__(self, surface):
         self.t_counter = 0 #Transition counter (255 -> 0)
-        self.started = False #Kostyl, if True - works 1 time for long black-intro in game world
+        #self.started = False #Kostyl, if True - works 1 time for long black-intro in game world
         self.away_counter = 0
 
         self.data = data.Data()
@@ -170,35 +170,53 @@ class World():
         except:
             self.t_counter = 0
 
-        if self.pers.place[:5] == 'intro':
+        #Outside of if-loop
+        place = self.pers.place
+        self.PLACE = next(item for item in self.data.place if item['Id'] == place)
+
+#        if self.pers.place[:5] == 'intro':
+#            self.intro = True
+#            #place = self.pers.place
+#            if self.introIndex < len(getattr(self.data, eval('place'))):
+#                self.PLACE = None
+#                self.text = getattr(self.data, eval('place'))[self.introIndex]
+#                self.bg = pg.transform.scale(pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg'), SIZE)
+#
+#                if self.introIndex+1 < len(getattr(self.data, eval('place'))):
+#                    self.introIndex += 1
+#                else:
+#                    self.introIndex = 0
+#                    self.PLACE = next(item for item in self.data.place if item['Id'] == self.pers.place)
+#                    self.t_counter = 255
+#                    self.started = True
+#            musicName = place
+
+        if 'Intros' in self.PLACE.keys() and self.pers.place not in self.pers.intros:
             self.intro = True
-            place = self.pers.place
-            if self.introIndex < len(getattr(self.data, eval('place'))):
-                self.PLACE = None
-                self.text = getattr(self.data, eval('place'))[self.introIndex]
-                if len(getattr(self.data, eval('place'))[self.introIndex][1]) != 1: #Because it grabs one letter other way
-                    self.text = getattr(self.data, eval('place'))[self.introIndex][0]
-                    self.bg = pg.transform.scale(pg.image.load('Images/' + getattr(self.data, eval('place'))[self.introIndex][1] + '.jpg'), SIZE)
-                else:
-                    self.text = getattr(self.data, eval('place'))[self.introIndex]
-                    self.bg = pg.transform.scale(pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg'), SIZE)
-                if self.introIndex+1 < len(getattr(self.data, eval('place'))):
-                    self.introIndex += 1
-                else:
-                    self.introIndex = 0
-                    self.PLACE = next(item for item in self.data.place if item['Id'] == self.pers.place)
-                    self.t_counter = 255
-                    self.started = True
-            musicName = place
-        else:
-            self.started = False
+            if self.introIndex < len(self.PLACE['Intros']):
+                self.text = self.PLACE['Intros'][self.introIndex]
+                self.bg = pg.transform.scale(pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg'), SIZE)
+                self.introIndex += 1
+            else:
+                self.introIndex = 0
+                self.pers.intros += ', ' + self.pers.place
+            musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
+
+        if 'Intros' not in self.PLACE.keys() or self.pers.place in self.pers.intros:
+            #self.started = False
             self.intro = False
-            place = self.pers.place
-            self.PLACE = next(item for item in self.data.place if item['Id'] == place)
-            self.bg = pg.transform.scale(pg.image.load('Images/' + place + '.jpg'), SIZE)
             self.text = self.PLACE['Text']
+            self.bg = pg.transform.scale(pg.image.load('Images/' + place + '.jpg'), SIZE)
             musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
             #self.time += self.PLACE['Time'] if 'Time' in self.PLACE.keys() else 10
+            for ind, move in enumerate(self.PLACE['Moves']):
+                self.moves.append(interface.Move(move[0], move[1], ind))
+            #Begin battle (testing section)
+            try:
+                if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
+                    self.pers = self.battleScreen.loop(self.pers, self.bg)
+            except:
+                pass
 
         if self.musicOldName != musicName:
             self.musicOldName = musicName
@@ -208,33 +226,19 @@ class World():
             music.play()
 
         try:
-            for ind, move in enumerate(self.PLACE['Moves']):
-                self.moves.append(interface.Move(move[0], move[1], ind))
-        except:
-            pass
-
-        try:
             if self.PLACE['Id'] not in self.pers.hints.split():
                 for ind, hint in enumerate(self.PLACE['Hints']):
                     self.hints.add(hint, '', ind*60)
                 #self.pers.hints.append(self.PLACE['Id'])
                     #APPENDING DOESNT WORK SOMEHOW :(
-                print(self.pers.hints)
                 self.pers.hints = self.pers.hints + ', ' + self.PLACE['Id']
+                print(self.pers.hints)
         except:
             pass
 
         #For image centered
         self.x = (self.surface.get_width() / 2) - (self.bg.get_width() / 2)
         self.y = (self.surface.get_height() / 2) - (self.bg.get_height() / 2)
-
-        #Begin battle (testing section)
-        try:
-            if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
-                self.pers = self.battleScreen.loop(self.pers, self.bg)
-        except:
-            pass
-
 
     def loop(self, settings):
         clock = pg.time.Clock()
@@ -247,10 +251,12 @@ class World():
                     exit()
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_RETURN and self.intro == True:
-                        if self.PLACE != None:
-                            self.pers.place = self.PLACE['Goto']
-                        self.pers = self.pers.save()
+                        #if self.PLACE != None:
+                        #    self.pers.place = self.PLACE['Goto']
+
+                        #self.pers = self.pers.save()
                         self.update(self.pers)
+                        self.pers = self.pers.save() #Here for saving active status at once
                     elif e.key == pg.K_F1:
                         self.message.hid_timer = 500
                         self.message.hidden = not self.message.hidden
@@ -283,8 +289,8 @@ class World():
             if self.away_counter > 10:
                 self.away_counter = 0
                 self.pers.place = moveLocal[2]
-                self.pers = self.pers.save()
                 self.update(self.pers)
+                self.pers = self.pers.save()
 
             if self.intro == False:
                 pass
@@ -335,10 +341,11 @@ class World():
             self.t_counter -= 20
 
             #DRAW ALL SPRITES
-
-            self.message.draw(self.text)
+            
             for move in self.moves:
                 move.draw(self.surface, self.x)
+
+            self.message.draw(self.text)
             self.hints.draw(self.surface, settings)
 
             pg.display.flip()

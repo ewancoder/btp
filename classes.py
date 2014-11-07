@@ -22,17 +22,21 @@ class Pers():
     name = ''
     #Unique ID of the place which is loaded by World class
     #If starts with 'intro' - load place[5:][0...len(place[5:])] consecutively just as a slideshow
-    place = 'introduction'
+    #place = 'introduction'
+    place = 'Forest/StumpOfDworaks'
 
-    #Characteristics
+    #History of viewed hints and intros
+    hints = 'init'
+    intros = 'init'
+
+    #===== Characteristics =====
+    speed = 5 #Speed of movement
+
     experience = 0
     level = 1
     maxhp = 20
     maxhp = 200
     atk = 30
-
-    #Speed of movement
-    speed = 5
 
     #Dynamic characteristics
     hp = maxhp
@@ -50,9 +54,6 @@ class Pers():
         '_2_PocketKnife',
         '_10_Gold'
     ]
-
-    #History of viewed hints
-    hints = 'init'
 
     def save(self):
         with open('Saves/' + self.name, 'wb') as f:
@@ -73,9 +74,9 @@ class Mob():
         self.atk = atk
         self.name = 'Mysterious creature'
 
-class Skeleton(Mob):
-    def __init(self):
-        self.name = 'Skeleton'
+#class Skeleton(Mob):
+#    def __init(self):
+#        self.name = 'Skeleton'
 
 #class Quest():
 #    def __init__():
