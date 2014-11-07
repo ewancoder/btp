@@ -17,9 +17,9 @@ class Data():
             'Moves': [
                 ('Small grove to the left', 'left', 'Forest/SunnyGrove')
             ],
-            'Hints': ('Type white text under yellow captions to move',
-                      'You will move to another location when progress bar is full',
-                      'Once you will master your running skills, you could move faster'),
+            'Hints': ('Use F1 to hide/restore message window',
+                      'Use Backspace to hide a hint like this',
+                      'Press Return to watch the story, Space to skip it'),
             'Intros': [
                 'There was a peaceful, beautiful planet... once upon a time, when humanity only began to evolve into something bigger.',
                 'Humans just started developing artificial black holes for quick interstellar travel, when suddenly it happend.',

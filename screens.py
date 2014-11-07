@@ -151,16 +151,14 @@ class World():
         self.message = interface.Message(surface)
         self.battleScreen = Battle(surface)
         self.hints = Hints(interface.Message.HEIGHT + 10)
-        self.hints.add('Use F1 to hide/restore message window', 'F1')
-        self.hints.add('Use Backspace to hide a hint like this', 'Hints', 60)
 
     #Passing pers, and not persPlace, just for future extension
-    def update(self, pers):
+    def update(self):
         self.dx = 0
         self.dy = 0
         self.locked = -1 #for locking words-movement
         self.moves = []
-        self.pers = pers
+        #self.pers = pers
         #self.time = 0
         self.data.update(self.pers)
 
@@ -240,6 +238,9 @@ class World():
         self.x = (self.surface.get_width() / 2) - (self.bg.get_width() / 2)
         self.y = (self.surface.get_height() / 2) - (self.bg.get_height() / 2)
 
+        #Finally, save pers
+        self.pers = self.pers.save()
+
     def loop(self, settings):
         clock = pg.time.Clock()
 
@@ -250,13 +251,12 @@ class World():
                 if e.type == pg.QUIT:
                     exit()
                 if e.type == pg.KEYDOWN:
-                    if e.key == pg.K_RETURN and self.intro == True:
-                        #if self.PLACE != None:
-                        #    self.pers.place = self.PLACE['Goto']
-
-                        #self.pers = self.pers.save()
-                        self.update(self.pers)
-                        self.pers = self.pers.save() #Here for saving active status at once
+                    if self.intro == True and e.key == pg.K_RETURN:
+                        self.update()
+                    elif self.intro == True and e.key == pg.K_SPACE:
+                            self.introIndex = 0
+                            self.pers.intros += ', ' + self.pers.place
+                            self.update()
                     elif e.key == pg.K_F1:
                         self.message.hid_timer = 500
                         self.message.hidden = not self.message.hidden
@@ -289,8 +289,8 @@ class World():
             if self.away_counter > 10:
                 self.away_counter = 0
                 self.pers.place = moveLocal[2]
-                self.update(self.pers)
-                self.pers = self.pers.save()
+                self.update()
+                #self.pers = self.pers.save()
 
             if self.intro == False:
                 pass

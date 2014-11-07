@@ -54,7 +54,8 @@ def gameLoop(surface):
                 pers = pers.save()
             loaded = True
 
-        worldScreen.update(pers) #Load whole world current environment based on "pers"
+        worldScreen.pers = pers #Load whole world current environment based on "pers"
+        worldScreen.update()
         worldScreen.loop(settings)
         oldname = name
         name = ''
