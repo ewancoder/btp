@@ -225,6 +225,8 @@ class World():
             if pg.mixer.get_busy():
                 pg.mixer.stop()
             music.play()
+        elif not pg.mixer.get_busy():
+            music.play()
 
         try:
             if self.PLACE['Id'] not in self.pers.hints.split():
@@ -267,6 +269,12 @@ class World():
                         self.hints.hide()
                     elif e.key == pg.K_F12:
                         return
+                    elif e.key == pg.K_ESCAPE and self.locked != -1:
+                        while self.moves[self.locked].rtext[0] != ' ':
+                            self.moves[self.locked].rtext = self.moves[self.locked].rtext[1:]
+                        self.moves[self.locked].rtext = self.moves[self.locked].rtext[1:] + ' ' + self.randWord()
+                        move.locked = False
+                        self.locked = -1
                     elif e.unicode.isalpha():
                         for index, move in enumerate(self.moves):
                             if self.locked == -1 or self.locked == index:
