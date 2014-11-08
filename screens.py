@@ -7,46 +7,57 @@ import classes
 import data
 import interface
 
+import constants
+
+SIZE = constants.BG_SIZE
+
 class Hints():
     def __init__(self, offset=0):
         #Need to use __init__ for different Hints instances for menu/login/world/battle
         self.hints = []
         self.ind = [] #For indexed items
-        self.hidden = []
+        self.count = 0 #count for hidden hints
         self.offset = offset
 
     def add(self, text, index, delay=0):
-        self.hints.append(interface.Hint(text, self.offset + len(self.hints)*50 + 10, delay=delay))
+        if text == '':
+            text = 'H' + str(len(self.hints))
+        self.hints.append(interface.Hint(text, self.offset + (len(self.hints) - self.count)*40, delay=delay))
         self.ind.append(index)
 
-    def draw(self, surface):
-        for hint in self.hints:
-            hint.draw(surface)
+    def draw(self, surface, settings): #for settings.hints
+        if settings.hints == True:
+            for hint in self.hints:
+                hint.draw(surface)
 
-    def hide(self, index):
+    def hide(self, index=0):
         try:
-            self.hints[self.ind.index(index)].hide = True
-            self.hidden.append(self.ind.index(index))
-            for i in range(self.ind.index(index)+1,len(self.hints)):
-                self.hints[i].shift = 50
-            self.ind[self.ind.index(index)] = "hidden"
+            if index == 0:
+                ind = self.count
+            else:
+                ind = self.ind.index(index)
+            self.hints[ind].hide = True
+            self.count += 1
+            for i in range(ind+1,len(self.hints)):
+                self.hints[i].shift = 40
+            self.ind[ind] = "hidden"
         except:
             pass
 
 class Menu():
-    BG = pg.image.load('Images/menu.jpg')
+    BG = pg.transform.scale(pg.image.load('Images/menu.jpg'), SIZE)
     MUSIC = pg.mixer.Sound('Music/menu.ogg')
     
     def __init__(self, surface):
         self.surface = surface
         MAIN_MENU = (
-            ['Start / Load Game', lambda: setattr(self, 'ret', 'login')],
-            ['Settings', lambda: setattr(self.menu, 'now', 1)],
-            ['Quit', lambda: quit()]
+            ['Start / Load Game', lambda: setattr(self, 'ret', 'login'), ''],
+            ['Settings', lambda: setattr(self.menu, 'now', 1), ''],
+            ['Quit', lambda: quit(), '']
         )
         SETTINGS_MENU = (
-            ['This is settings example', lambda: print('There will be settings.')],
-            ['Back', lambda: setattr(self.menu, 'now', 0)]
+            ['Show hints', 'hints', 'checkbox'],
+            ['Back', lambda: setattr(self.menu, 'now', 0), '']
         )
         MENU = (
             MAIN_MENU,
@@ -57,8 +68,8 @@ class Menu():
         self.hints.add('Use J/K to move Down/Up', 'jk')
         self.hints.add('Use L (or Enter) to switch', 'lenter', 60)
         self.hints.add('Version 0.01 alpha', 'version', 120)
-        
-    def loop(self):
+
+    def loop(self, settings, oldname=''): #settings is settings object (current state already, save-loaded outside, in game.py file)
         clock = pg.time.Clock()
         #Returns its value (exits Menu) if not ''
         self.ret = ''
@@ -75,23 +86,27 @@ class Menu():
                 if e.type == pg.KEYDOWN:
                     if e.key == pg.K_j or e.key == pg.K_k:
                         self.hints.hide('jk')
-                    if e.key == pg.K_l or e.key == pg.K_RETURN:
+                    elif e.key == pg.K_l or e.key == pg.K_RETURN:
                         self.hints.hide('lenter')
-            self.menu.events(events)
+                    elif e.key == pg.K_F12 and oldname != '':
+                        self.ret = 'back_' + oldname
+            toggle = self.menu.events(events)
+            if toggle != None:
+                self.ret = toggle
 
             if not pg.mixer.get_busy():
                 self.MUSIC.play(-1)
 
             self.surface.fill(0)
             self.surface.blit(self.BG, (-10, -10))
-            self.menu.draw(self.surface)
-            self.hints.draw(self.surface)
+            self.menu.draw(self.surface, settings) #Pass settings to next cycle (which draws based on True/False value)
+            self.hints.draw(self.surface, settings)
 
             pg.display.flip()
 
 class Login():
     TEXT = 'Tell me your name, Stranger!\nIf you belong to this place, you\'ll find yourself into the place you left behind last time, otherwise you shall begin your journey in the forest of damned...'
-    BG = pg.image.load('Images/login.jpg')
+    BG = pg.transform.scale(pg.image.load('Images/login.jpg'), SIZE)
 
     def __init__(self, surface):
         self.message = interface.Message(surface)
@@ -112,7 +127,7 @@ class Login():
                     if e.key == pg.K_ESCAPE:
                         return ''
                     elif e.key == pg.K_F1:
-                        self.message.hid_timer = 300
+                        self.message.hid_timer = 500
                         self.message.hidden = not self.message.hidden
             name = self.parchment.events(events) #inputEvent
             if name not in (None, ''):
@@ -127,46 +142,82 @@ class Login():
 
 class World():
     def __init__(self, surface):
+        self.t_counter = 0 #Transition counter (255 -> 0)
+        #self.started = False #Kostyl, if True - works 1 time for long black-intro in game world
+        self.away_counter = 0
+
         self.data = data.Data()
         self.introIndex = 0
         self.musicOldName = ''
         self.surface = surface
-        self.inputBox = interface.Input(surface)
         self.message = interface.Message(surface)
         self.battleScreen = Battle(surface)
+        self.hints = Hints(interface.Message.HEIGHT + 10)
+
+    def randWord(self):
+        unique = False
+        while not unique:
+            unique = True
+            word = random.choice(data.words)
+            for m in self.moves:
+                for rword in m.rtext.split():
+                    if word[:1] == rword[:1]:
+                        unique = False
+        return word
 
     #Passing pers, and not persPlace, just for future extension
-    def update(self, pers):
+    def update(self):
+        self.locked = -1 #for locking words-movement
         self.moves = []
-        self.pers = pers
+        unique = False
+        #self.pers = pers
         #self.time = 0
         self.data.update(self.pers)
-        if self.pers.place[:5] == 'intro':
+
+        try:
+            self.oldbg = self.bg
+            self.t_counter = 255
+        except:
+            self.t_counter = 0
+
+        #Outside of if-loop
+        place = self.pers.place
+        self.PLACE = next(item for item in self.data.place if item['Id'] == place)
+
+        if 'Intros' in self.PLACE.keys() and self.pers.place not in self.pers.intros:
             self.intro = True
-            place = self.pers.place
-            if self.introIndex < len(getattr(self.data, eval('place'))):
-                self.PLACE = None
-                self.text = getattr(self.data, eval('place'))[self.introIndex]
-                if len(getattr(self.data, eval('place'))[self.introIndex][1]) != 1: #Because it grabs one letter other way
-                    self.text = getattr(self.data, eval('place'))[self.introIndex][0]
-                    self.bg = pg.image.load('Images/' + getattr(self.data, eval('place'))[self.introIndex][1] + '.jpg')
-                else:
-                    self.text = getattr(self.data, eval('place'))[self.introIndex]
-                    self.bg = pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg')
-                if self.introIndex+1 < len(getattr(self.data, eval('place'))):
-                    self.introIndex += 1
-                else:
-                    self.introIndex = 0
-                    self.PLACE = next(item for item in self.data.place if item['Id'] == self.pers.place)
-            musicName = place
-        else:
+            if self.introIndex < len(self.PLACE['Intros']):
+                self.text = self.PLACE['Intros'][self.introIndex]
+                self.bg = pg.transform.scale(pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg'), SIZE)
+                self.introIndex += 1
+            else:
+                self.introIndex = 0
+                self.pers.intros += ', ' + self.pers.place
+            musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
+
+        if 'Intros' not in self.PLACE.keys() or self.pers.place in self.pers.intros:
+            #self.started = False
             self.intro = False
-            place = self.pers.place
-            self.PLACE = next(item for item in self.data.place if item['Id'] == place)
-            self.bg = pg.image.load('Images/' + place + '.jpg')
             self.text = self.PLACE['Text']
+            self.bg = pg.transform.scale(pg.image.load('Images/' + place + '.jpg'), SIZE)
             musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
             #self.time += self.PLACE['Time'] if 'Time' in self.PLACE.keys() else 10
+            for ind, move in enumerate(self.PLACE['Moves']):
+
+                rtext = self.randWord()
+                for i in range(4):
+                    rtext += ' ' + self.randWord()
+
+                self.moves.append(interface.Move(move[0], move[1]))
+                self.moves[ind].rtext = rtext
+
+            #Begin battle (testing section)
+            #MOVED TO TYPING SECTION
+            #try:
+            #    if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
+            #        self.pers = self.battleScreen.loop(self.pers, self.bg)
+            #except:
+            #    pass
 
         if self.musicOldName != musicName:
             self.musicOldName = musicName
@@ -174,8 +225,28 @@ class World():
             if pg.mixer.get_busy():
                 pg.mixer.stop()
             music.play()
+        elif not pg.mixer.get_busy():
+            music.play()
 
-    def loop(self):
+        try:
+            if self.PLACE['Id'] not in self.pers.hints.split():
+                for ind, hint in enumerate(self.PLACE['Hints']):
+                    self.hints.add(hint, '', ind*60)
+                #self.pers.hints.append(self.PLACE['Id'])
+                    #APPENDING DOESNT WORK SOMEHOW :(
+                self.pers.hints = self.pers.hints + ', ' + self.PLACE['Id']
+                print(self.pers.hints)
+        except:
+            pass
+
+        #For image centered
+        self.x = (self.surface.get_width() / 2) - (self.bg.get_width() / 2)
+        self.y = (self.surface.get_height() / 2) - (self.bg.get_height() / 2)
+
+        #Finally, save pers
+        self.pers = self.pers.save()
+
+    def loop(self, settings):
         clock = pg.time.Clock()
 
         while True:
@@ -185,61 +256,98 @@ class World():
                 if e.type == pg.QUIT:
                     exit()
                 if e.type == pg.KEYDOWN:
-                    if e.key == pg.K_RETURN and self.intro == True:
-                        #NEED ASSURANCE
-                        if self.PLACE != None:
-                            self.pers.place = self.PLACE['Goto']
-                            if 'Mobs' in self.PLACE.keys():
-                                if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
-                                    self.pers = self.battleScreen.loop(self.pers)
-                        self.pers.save()
-                        self.update(self.pers)
-                        #return self.PLACE, None
+                    if self.intro == True and e.key == pg.K_RETURN:
+                        self.update()
+                    elif self.intro == True and e.key == pg.K_SPACE:
+                            self.introIndex = 0
+                            self.pers.intros += ', ' + self.pers.place
+                            self.update()
                     elif e.key == pg.K_F1:
-                        self.message.hid_timer = 300
+                        self.message.hid_timer = 500
                         self.message.hidden = not self.message.hidden
+                    elif e.key == pg.K_BACKSPACE:
+                        self.hints.hide()
+                    elif e.key == pg.K_F12:
+                        return
+                    elif e.key == pg.K_ESCAPE and self.locked != -1:
+                        while self.moves[self.locked].rtext[0] != ' ':
+                            self.moves[self.locked].rtext = self.moves[self.locked].rtext[1:]
+                        self.moves[self.locked].rtext = self.moves[self.locked].rtext[1:] + ' ' + self.randWord()
+                        move.locked = False
+                        self.locked = -1
+                    elif e.unicode.isalpha():
+                        for index, move in enumerate(self.moves):
+                            if self.locked == -1 or self.locked == index:
+                                if move.rtext.startswith(e.unicode):
 
-            if self.intro == False:
-                #REPROGRAM TO MOVE CHARACTER OVER SCREEN
+                                    #HERE IS ALL DONE FOR CURRENT move IF PRESSED KEY, INCLUDING CHANGING TIME AND BATTLE STARTING IF CHANCE IS BIG
+                                    move.rtext = move.rtext[1:]
 
-                for move in self.PLACE['Moves']:
-                    self.moves.append(interface.Move(move[0], move[1]))
+                                    move.locked = True
+                                    self.locked = index
+                                    moveLocal = self.PLACE['Moves'][index]
+                                    try:
+                                        move.progress += 1 / (moveLocal[3] / self.pers.speed)
+                                    except:
+                                        move.progress += 1 / (constants.DISTANCE / self.pers.speed)
+                                    #Each stoke adds 1 minute to the time (and to the statistics)
+                                    self.pers.time += 1
+                                    self.pers.strokes += 1 #Need this separately because time will flow regardless of typing, from other actions too
+                                    #HERE IS BATTLE CHANCES ENGAGED (EACH TYPO)
+                                    try:
+                                        if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
+                                            self.pers = self.battleScreen.loop(self.pers, self.bg)
+                                    except:
+                                        pass
 
-                #OLD VERSION
-#                e = self.inputBox.events(events)
-#                if e!= None and e in self.PLACE['Move']:
-#                    moveIndex = self.PLACE['Move'].index(e)
-#                    move = next(item for item in self.data.place if item['Id'] == self.PLACE['Goto'][moveIndex])
-#                    self.pers.time += move['Time'][moveIndex] if 'Time' in move else 10
-#                    moveto = self.PLACE['Goto'][self.PLACE['Move'].index(e)]
-#                    newplace = next(item for item in self.data.place if item['Id'] == moveto)
-                    #NEED ASSURANCE
-#                    if self.PLACE != None:
-#                        self.pers.place = moveto
-#                        if 'Mobs' in newplace.keys():
-#                            if random.randrange(0,100) < newplace['Mobs']['Chance']:
-#                                self.pers = self.battleScreen.loop(self.pers)
-#                    self.pers.save()
-#                    self.update(self.pers)
-                    #return newplace, moveto
+                                    if move.rtext[0] == ' ':
+                                        move.rtext = move.rtext[1:] + ' ' + self.randWord()
+                                        move.locked = False
+                                        self.locked = -1
+                                        if move.progress >= 1:
+                                            move.away = True
+                                            self.away_counter = 1
+                                            moveLocal = self.PLACE['Moves'][index]
+                                    
+            if self.away_counter > 0:
+                self.away_counter += 1
+            if self.away_counter > 10:
+                self.away_counter = 0
+                self.pers.place = moveLocal[2]
+                self.update()
+                #self.pers = self.pers.save()
 
             #LOGIC FOR ALL SPRITES
 
             self.surface.fill(0)
             if self.intro == True:
-                self.surface.blit(self.bg, (-5,-5))
+                x = -10
+                y = -10
+                try:
+                    self.surface.fill((255,255,255))
+                    self.oldbg.set_alpha(self.t_counter)
+                    self.surface.blit(self.oldbg, (x,y))
+                except:
+                    pass
             else:
                 #Should calculate exact position
-                self.surface.blit(self.bg, (-300,-5))
-                #DRAW ALL SPRITES
+                x = self.x
+                y = self.y
 
-            self.message.draw(self.text)
-            if self.intro == False:
-                #Remove this 'cause I don't need inputBox anymore (there will be floating text over objects)
-                self.inputBox.draw(self.surface)
+            if self.away_counter > 0:
+                self.bg.set_alpha(255 - self.away_counter * 20)
+            else:
+                self.bg.set_alpha(255-self.t_counter)
+            self.surface.blit(self.bg, (x,y))
+            self.t_counter -= 20
+
+            #DRAW ALL SPRITES
             
             for move in self.moves:
-                move.draw(self.surface)
+                move.draw(self.surface, self.x)
+
+            self.message.draw(self.text)
+            self.hints.draw(self.surface, settings)
 
             pg.display.flip()
 
@@ -247,8 +355,9 @@ class Battle():
     def __init__(self, surface):
         self.surface = surface
 
-    def loop(self, pers):
-        self.bg = pg.image.load('Images/Battle/' + os.path.basename(os.path.dirname(pers.place)) + '.jpg')
+    def loop(self, pers, bg):
+        #self.bg = pg.transform.scale(pg.image.load('Images/Battle/' + os.path.basename(os.path.dirname(pers.place)) + '.jpg'), SIZE)
+        self.bg = bg
 
         clock = pg.time.Clock()
         mob = classes.Mob()
@@ -262,7 +371,7 @@ class Battle():
         try:
             spd = next(item for item in d.place if item['Id'] == pers.place)['Mobs']['Speed']
         except:
-            spd = 0
+            spd = 1
         speed.append(spd)
 
         self.stats = interface.BattleStats(self.surface, mob)

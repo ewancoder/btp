@@ -1,4 +1,7 @@
 import random #For Word X-positioning
+import data #for random words
+
+import classes #for menu settings
 
 import pygame as pg
 
@@ -16,6 +19,7 @@ class Menu():
     unsel_timer = 0   #30 for 1 sec --- sel. timer for cool effects
     sel_timer = 0
 
+
     def __init__(self, items):
         self.ITEMS = items
         self.update()
@@ -24,9 +28,9 @@ class Menu():
         self.out = 150
         self.selected = 0
         self.unselected = 0
-        self.items = [{'Label': i[0], 'Action': i[1]} for i in self.ITEMS[self.now]]
+        self.items = [{'Label': i[0], 'Action': i[1], 'Type': i[2]} for i in self.ITEMS[self.now]]
 
-    def draw(self, surface):
+    def draw(self, surface, settings):
         offset = 0 #Incremental variable for making y-difference
         for index, i in enumerate(self.items):
             if self.selected == index:
@@ -47,7 +51,13 @@ class Menu():
                     color = self.DCOLOR
             else:
                 color = self.DCOLOR
-            text = self.FONT.render(i['Label'], True, color)
+            if i['Type'] == 'checkbox':
+                if getattr(settings, i['Action']) == False:
+                    text = self.FONT.render('X ' + i['Label'], True, color)
+                else:
+                    text = self.FONT.render('O ' + i['Label'], True, color)
+            else:
+                text = self.FONT.render(i['Label'], True, color)
             if self.out > 0:
                 surface.blit(text, (self.X-self.out, self.Y + offset))
                 self.out -= 10
@@ -74,40 +84,101 @@ class Menu():
                         self.sel_timer = 40
                 elif e.key == pg.K_RETURN or e.key == pg.K_SPACE or e.key == pg.K_l:
                     self.SELECT_SOUND.play()
-                    self.items[self.selected]['Action']()
+                    if self.items[self.selected]['Type'] == '':
+                        self.items[self.selected]['Action']()
+                    elif self.items[self.selected]['Type'] == 'checkbox':
+                        return self.items[self.selected]['Action']
                     self.update()
+                    
+class ProgressBar():
+    ALPHA = 130
+    HEIGHT = 4
+    
+    def __init__(self, width):
+        self.width = width
+        self.surface = pg.Surface((width,self.HEIGHT), pg.SRCALPHA, 32)
+
+    def draw(self, surface, xy, progress):
+        (x, y) = xy
+        self.surface.fill((0,0,0, self.ALPHA))
+        pg.draw.rect(self.surface, (255,255,255), pg.Rect(0,0,self.width,self.HEIGHT))
+        pg.draw.rect(self.surface, (255,100,100), pg.Rect(0,0,int(self.width*progress),self.HEIGHT))
+        pg.draw.rect(self.surface, (255,0,0), pg.Rect(0,0,self.width,self.HEIGHT), 1)
+        surface.blit(self.surface, (x, y))
 
 class Move():
-    ALPHA = 10
-    FONT = pg.font.Font('Fonts/rpg.otf', 30)
+    ALPHA = 90
+    A_TITLE_COLOR = (200,200,100) #Activated title
+    TITLE_COLOR = (200,100,100) #Not activated title, hardly used yet
+    FONT_COLOR = (200,200,200)
+    FONT = pg.font.Font('Fonts/rpg.otf', 22)
 
-    def __init__(self, text, xy):
+    def __init__(self, text, style):
+        self.away = False #If true - moveaway with cool effect (when progress >= 1)
+        self.locked = False
+        self.locked_color = 0 #RED-increment for animation of locking
         self.text = text
-        (self.x, self.y) = xy
-        self.surface = pg.Surface((self.FONT.size(self.text)[0] + 10, self.FONT.size(self.text)[1]))
-        self.surface.set_alpha(self.ALPHA)
-        self.color = (200,100,100)
-        self.surface.set_alpha(self.ALPHA)
+        self.style = style
+        #self.rtext = '' #This variable created automatically by screens.py
+        self.width = self.FONT.size(self.text)[0] + 20
 
-    def draw(self, surface):
-        if self.x < 0:
-            x = surface.get_width() - self.FONT.size(self.text)[0] + self.x
-        else:
-            x = self.x
-        bg_color = (0,0,0, self.ALPHA)
-        self.rend_text = self.FONT.render(self.text, True, self.color)
-        self.surface.fill((bg_color))
-        self.surface.blit(self.rend_text, (5,0))
-        surface.blit(self.surface, (x, self.y))
+        self.RECT = pg.Rect((0, 0, self.width, self.FONT.size(text)[1]))
+        self.surface = pg.Surface(self.RECT.size, pg.SRCALPHA, 32)
+        self.rRECT = pg.Rect((0, 0, self.width, self.FONT.size(text)[1]))
+        self.rsurface = pg.Surface(self.rRECT.size, pg.SRCALPHA, 32)
+
+        self.progressBar = ProgressBar(self.width)
+        self.progress = 0
+
+    def draw(self, surface, outx):
+        if self.style == 'right':
+            if self.away == False:
+                self.x = surface.get_width() - self.width - 30
+            elif self.x < surface.get_width():
+                self.x += 30
+            self.y = surface.get_height() - self.RECT.size[1]*2 - 60
+        elif self.style == 'left':
+            if self.away == False:
+                self.x = 20
+            elif self.x > -self.width:
+                self.x -= 30
+            self.y = surface.get_height() - self.RECT.size[1]*2 - 60
+        elif self.style == 'top':
+            self.x = surface.get_width() / 2 - self.width / 2
+            if self.away == False:
+                self.y = Message.HEIGHT + 30
+            elif self.y > -60:
+                self.y -= 30
+        elif self.style == 'bottom':
+            self.x = surface.get_width() / 2 - self.width / 2
+            if self.away == False:
+                self.y = surface.get_height() - self.RECT.size[1]*2 - 30
+            elif self.y < surface.get_height():
+                self.y += 30
+        self.progressBar.draw(surface, (self.x,self.y), self.progress)
+
+        self.surface.fill((0,0,0, self.ALPHA))
+        self.rsurface.fill((self.locked_color,0,0, self.ALPHA))
+        if self.locked and self.locked_color < 70:
+            self.locked_color += 10
+        elif not self.locked and self.locked_color > 0:
+            self.locked_color -= 10
+        text = self.FONT.render(self.text, True, self.A_TITLE_COLOR)
+        rtext = self.FONT.render(self.rtext, True, self.FONT_COLOR)
+        self.surface.blit(text, ((self.RECT.width - text.get_width()) / 2, 0))
+        self.rsurface.blit(rtext, (10, 0))
+        surface.blit(self.surface, (self.x, self.y))
+        surface.blit(self.rsurface, (self.x, self.y + self.RECT.height))
 
 class Hint():
     ALPHA = 180
-    FONT = pg.font.Font('Fonts/rpg.otf', 40)
+    FONT = pg.font.Font('Fonts/rpg.otf', 30)
 
     def __init__(self, text, y=10, x=10, style='default', delay=0):
         self.text = str(text)
         self.x = x
-        self.y = y
+        self.y = y + 30
+        self.Y = y + 10
         self.alpha = 0
         self.surface = pg.Surface((self.FONT.size(self.text)[0] + 10, self.FONT.size(self.text)[1]))
         self.surface.set_alpha(0)
@@ -124,6 +195,8 @@ class Hint():
             x = surface.get_width() - self.surface.get_width() - self.x
             if self.alpha < self.ALPHA and self.hide == False:
                 self.alpha += 4
+            if self.y > self.Y:
+                self.y -= 1
             self.surface.set_alpha(self.alpha)
             bg_color = (0,0,0, self.alpha)
             self.rend_text = self.FONT.render(self.text, True, self.color)
@@ -133,20 +206,24 @@ class Hint():
 
         if self.hide == True:
             if self.alpha > 0:
-                self.alpha -= 4
+                self.alpha -= 8
+                if self.alpha < 0:
+                    self.alpha = 0
 
         if self.shift > 0:
             self.shift -= 1
             self.y -= 1
+            self.Y -= 1
 
 class Message():
     ALPHA = 130
     hidden = False
-    hid_timer = 300;
+    hid_timer = 500;
     FONT_COLOR = (200,200,200)
+    HEIGHT = 220
 
     def __init__(self, surface):
-        self.RECT = pg.Rect((0, 0, surface.get_size()[0] - 10*2, surface.get_size()[1] / 3))
+        self.RECT = pg.Rect((0, 0, surface.get_size()[0] - 10*2, self.HEIGHT))
         self.X = surface.get_size()[0] / 2 - self.RECT.width / 2
         self.setFontSize(30)
         self.surface = surface
@@ -192,20 +269,20 @@ class Message():
 
             self.surface.blit(surface, (self.X - self.hid_timer, 10))
             if self.hidden == False and self.hid_timer > 0:
-                self.hid_timer -=50
+                self.hid_timer -=100
             elif self.hidden == True:
-                self.hid_timer +=50
+                self.hid_timer +=100
 
 class Input():
     KEY_SOUND = pg.mixer.Sound('Sounds/click.ogg')
+    HEIGHT = 150
 
     def __init__(self, surface):
         self.prompt = ''
-        self.FONT = pg.font.Font('Fonts/rpg.ttf', 30)
+        self.FONT = pg.font.Font('Fonts/rpg.ttf', 90)
         self.WIDTH = surface.get_size()[0] / 2
-        self.HEIGHT = surface.get_size()[1] / 14
         self.X = (surface.get_size()[0] - self.WIDTH) / 2
-        self.Y = surface.get_size()[1] - self.HEIGHT
+        self.Y = surface.get_size()[1]/1.3 - self.HEIGHT/2
         self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
 
     def draw(self, surface):
@@ -230,7 +307,7 @@ class Input():
 class Word():
     def __init__(self, surface, word):
         self.BG_COLOR = (0,0,0, 80)
-        self.FONT = pg.font.Font('Fonts/comic.ttf', 40)
+        self.FONT = pg.font.Font('Fonts/rpg.otf', 40)
         self.HI_COLOR = (200,100,100)
         self.DEF_COLOR = (100,100,200)
 
@@ -260,7 +337,7 @@ class Notify():
         self.x = x
         self.y = y
         self.alpha = 255
-        self.FONT = pg.font.Font('Fonts/comic.ttf', 40)
+        self.FONT = pg.font.Font('Fonts/rpg.otf', 40)
         self.word = str(word)
         self.surface = pg.Surface((self.FONT.size(self.word)[0], self.FONT.size(self.word)[1]))
         self.surface.set_alpha(150)
@@ -297,11 +374,11 @@ class BattleStats():
         self.surface.append(pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA))
         self.picture = []
         self.picture.append(pg.Surface((self.WIDTH * 8/10, self.HEIGHT / 1.3)))
-        self.picture[0].blit(pg.image.load('Images/Pers.png'), (0,0))
-        self.picture[0].set_colorkey((255,255,255))
+        self.picture[0].blit(pg.transform.scale(pg.image.load('Images/Pers.png'), (500,500)), (0,0))
+        self.picture[0].set_colorkey(0)
         self.picture.append(pg.Surface((self.WIDTH * 8/10, self.HEIGHT / 1.3)))
-        self.picture[1].set_colorkey((255,255,255))
-        self.picture[1].blit(pg.image.load('Images/Mobs/' + mob.name + '.png'), (0,0))
+        self.picture[1].set_colorkey(0)
+        self.picture[1].blit(pg.transform.scale(pg.image.load('Images/Mobs/' + mob.name + '.png'), (500,500)), (0,0))
 
     def draw(self, surface, pers, mob):
         color = (200,100,100)

@@ -11,43 +11,56 @@ pg.init()
 import classes
 import screens
 
+import constants
+
 CAPTION = 'Big Typernatural Project'
-SIZE = (1000, 700)
+SIZE = constants.SIZE
 
 def gameLoop(surface):
+    settings = classes.Settings()
+    try:
+        settings = settings.load()
+    except:
+        pass
+
     pers = classes.Pers()
     menuScreen = screens.Menu(surface)
     loginScreen = screens.Login(surface)
     worldScreen = screens.World(surface)
-    battleScreen = screens.Battle(surface)
+
+    name = '' #Actual name of a player (not pers.name because we need to clean mess after reloading to another pers)
+    oldname = '' #for saving pers state meanwhile in menu
 
     while True:
-        while pers.name == '':
+        while name == '':
             loaded = False
-            if menuScreen.loop() == 'login':
-                pers.name = loginScreen.loop()
+            menu = menuScreen.loop(settings, oldname)
+            if menu == 'login':
+                name = loginScreen.loop()
+            elif menu == 'back_' + oldname:
+                name = oldname
+                loaded = True
+            else:
+                setattr(settings, menu, not getattr(settings, menu))
+                settings = settings.save()
 
         if not loaded:
+            pers = classes.Pers()
+            pers.name = name
             if os.path.isfile('Saves/' + pers.name):
                 pers = pers.load()
+                print(pers.hints)
             else:
                 if not os.path.isdir('Saves'):
                     os.mkdir('Saves')
                 pers = pers.save()
             loaded = True
 
-        worldScreen.update(pers) #Load whole world current environment based on "pers"
-        #NEED ASSURANCE
-        worldScreen.loop()
-        pers.name == ''
-        #place, move = worldScreen.loop() #Loop current world "snap" (until you move away or hit a monster)
-        #print(pers.time)
-        #if place != None:
-        #    pers.place = place['Goto'] if  move == None else move
-        #    if 'Mobs' in place.keys():
-        #        if random.randrange(0, 100) < place['Mobs']['Chance']:
-        #            pers = battleScreen.loop(pers)
-        #pers.save()
+        worldScreen.pers = pers #Load whole world current environment based on "pers"
+        worldScreen.update()
+        worldScreen.loop(settings)
+        oldname = name
+        name = ''
 
 if __name__ == '__main__':
     pg.display.set_caption(CAPTION)

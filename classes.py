@@ -2,24 +2,47 @@
 
 import pickle
 
+class Settings():
+    hints = True
+
+    def save(self):
+        with open('settings', 'wb') as f:
+            pickle.dump(self, f)
+        print('Settings saved')
+        return(self)
+
+    def load(self):
+        with open('settings', 'rb') as f:
+            self = pickle.load(f)
+        print('Settings loaded')
+        return(self)
+
 class Pers():
     #If name is '' - show main menu screen
     name = ''
     #Unique ID of the place which is loaded by World class
     #If starts with 'intro' - load place[5:][0...len(place[5:])] consecutively just as a slideshow
-    place = 'introduction'
+    #place = 'introduction'
+    place = 'Forest/StumpOfDworaks'
 
-    #Characteristics
+    #History of viewed hints and intros
+    hints = 'init'
+    intros = 'init'
+
+    #===== Characteristics =====
+    #Speed of movement [mps, meters per stroke]: but 1 stroke = 1 minute of gametime, so you will benefit by moving faster not only in less-strokes way, but also in less-time-spent way
+    speed = 5
+
     experience = 0
     level = 1
     maxhp = 20
     maxhp = 200
-    atk = 4
+    atk = 30
 
     #Dynamic characteristics
     hp = maxhp
 
-    #The time (in minutes, +10 per turn)
+    #The time (in minutes)
     time = 0
 
     #Statistics
@@ -52,9 +75,9 @@ class Mob():
         self.atk = atk
         self.name = 'Mysterious creature'
 
-class Skeleton(Mob):
-    def __init(self):
-        self.name = 'Skeleton'
+#class Skeleton(Mob):
+#    def __init(self):
+#        self.name = 'Skeleton'
 
 #class Quest():
 #    def __init__():
