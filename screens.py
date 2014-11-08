@@ -7,7 +7,9 @@ import classes
 import data
 import interface
 
-SIZE = (1400,800)
+import constants
+
+SIZE = constants.BG_SIZE
 
 class Hints():
     def __init__(self, offset=0):
@@ -152,12 +154,22 @@ class World():
         self.battleScreen = Battle(surface)
         self.hints = Hints(interface.Message.HEIGHT + 10)
 
+    def randWord(self):
+        unique = False
+        while not unique:
+            unique = True
+            word = random.choice(data.words)
+            for m in self.moves:
+                for rword in m.rtext.split():
+                    if word[:1] == rword[:1]:
+                        unique = False
+        return word
+
     #Passing pers, and not persPlace, just for future extension
     def update(self):
-        self.dx = 0
-        self.dy = 0
         self.locked = -1 #for locking words-movement
         self.moves = []
+        unique = False
         #self.pers = pers
         #self.time = 0
         self.data.update(self.pers)
@@ -171,23 +183,6 @@ class World():
         #Outside of if-loop
         place = self.pers.place
         self.PLACE = next(item for item in self.data.place if item['Id'] == place)
-
-#        if self.pers.place[:5] == 'intro':
-#            self.intro = True
-#            #place = self.pers.place
-#            if self.introIndex < len(getattr(self.data, eval('place'))):
-#                self.PLACE = None
-#                self.text = getattr(self.data, eval('place'))[self.introIndex]
-#                self.bg = pg.transform.scale(pg.image.load('Images/Intro/' + place + str(self.introIndex) + '.jpg'), SIZE)
-#
-#                if self.introIndex+1 < len(getattr(self.data, eval('place'))):
-#                    self.introIndex += 1
-#                else:
-#                    self.introIndex = 0
-#                    self.PLACE = next(item for item in self.data.place if item['Id'] == self.pers.place)
-#                    self.t_counter = 255
-#                    self.started = True
-#            musicName = place
 
         if 'Intros' in self.PLACE.keys() and self.pers.place not in self.pers.intros:
             self.intro = True
@@ -208,13 +203,21 @@ class World():
             musicName = os.path.basename(os.path.dirname('Images/' + place + '.jpg'))
             #self.time += self.PLACE['Time'] if 'Time' in self.PLACE.keys() else 10
             for ind, move in enumerate(self.PLACE['Moves']):
-                self.moves.append(interface.Move(move[0], move[1], ind))
+
+                rtext = self.randWord()
+                for i in range(4):
+                    rtext += ' ' + self.randWord()
+
+                self.moves.append(interface.Move(move[0], move[1]))
+                self.moves[ind].rtext = rtext
+
             #Begin battle (testing section)
-            try:
-                if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
-                    self.pers = self.battleScreen.loop(self.pers, self.bg)
-            except:
-                pass
+            #MOVED TO TYPING SECTION
+            #try:
+            #    if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
+            #        self.pers = self.battleScreen.loop(self.pers, self.bg)
+            #except:
+            #    pass
 
         if self.musicOldName != musicName:
             self.musicOldName = musicName
@@ -264,26 +267,40 @@ class World():
                         self.hints.hide()
                     elif e.key == pg.K_F12:
                         return
-            for index, move in enumerate(self.moves):
-                if self.locked == index or self.locked == -1:
-                    ind = move.events(events)
-                    if ind != None:
-                        moveLocal = self.PLACE['Moves'][ind]
-                        self.locked = ind
-                        if ind != -1:
-                            move.progress += .01 * self.pers.speed
-                        if move.progress >= 1:
-                            #for move in self.moves:
-                            #    move.away = True
-                            move.away = True #Moves only an item you chose
-                            self.away_counter += 1
-                        else:
-                            if moveLocal[1] == 'left':
-                                if self.x < -10:
-                                    self.dx -= 5 * self.pers.speed
-                            elif moveLocal[1] == 'right':
-                                self.dx += 5 * self.pers.speed
+                    elif e.unicode.isalpha():
+                        for index, move in enumerate(self.moves):
+                            if self.locked == -1 or self.locked == index:
+                                if move.rtext.startswith(e.unicode):
 
+                                    #HERE IS ALL DONE FOR CURRENT move IF PRESSED KEY, INCLUDING CHANGING TIME AND BATTLE STARTING IF CHANCE IS BIG
+                                    move.rtext = move.rtext[1:]
+
+                                    move.locked = True
+                                    self.locked = index
+                                    moveLocal = self.PLACE['Moves'][index]
+                                    try:
+                                        move.progress += 1 / (moveLocal[3] / self.pers.speed)
+                                    except:
+                                        move.progress += 1 / (constants.DISTANCE / self.pers.speed)
+                                    #Each stoke adds 1 minute to the time (and to the statistics)
+                                    self.pers.time += 1
+                                    self.pers.strokes += 1 #Need this separately because time will flow regardless of typing, from other actions too
+                                    #HERE IS BATTLE CHANCES ENGAGED (EACH TYPO)
+                                    try:
+                                        if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
+                                            self.pers = self.battleScreen.loop(self.pers, self.bg)
+                                    except:
+                                        pass
+
+                                    if move.rtext[0] == ' ':
+                                        move.rtext = move.rtext[1:] + ' ' + self.randWord()
+                                        move.locked = False
+                                        self.locked = -1
+                                        if move.progress >= 1:
+                                            move.away = True
+                                            self.away_counter = 1
+                                            moveLocal = self.PLACE['Moves'][index]
+                                    
             if self.away_counter > 0:
                 self.away_counter += 1
             if self.away_counter > 10:
@@ -292,31 +309,7 @@ class World():
                 self.update()
                 #self.pers = self.pers.save()
 
-            if self.intro == False:
-                pass
-                #REPROGRAM TO MOVE CHARACTER OVER SCREEN
-
             #LOGIC FOR ALL SPRITES
-
-            if self.dx > 0:
-                if self.x > self.surface.get_width() - self.bg.get_width() + 10:
-                    self.x -= 1
-                else:
-                    self.x = self.surface.get_width() - self.bg.get_width() + 10
-                self.dx -= 1
-            if self.dx < 0:
-                if self.x < -10:
-                    self.x += 1
-                else:
-                    self.x = -10
-                self.dx += 1
-
-            #if self.dy > 0:
-            #    self.y -= 1
-            #    self.dy -= 1
-            #if self.dy < 0:
-            #    self.y += 1
-            #    self.dy += 1
 
             self.surface.fill(0)
             if self.intro == True:

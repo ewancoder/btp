@@ -40,7 +40,7 @@ class Data():
             'Id': 'Forest/SunnyGrove',
             'Text': 'Small grove of fresh trees, plentiful of branches, logs and flowers. I can surely rest here.',
             'Moves': [
-                ('Go right, to the Stump of Dworaks', 'right', 'Forest/StumpOfDworaks'),
+                ('Go right, to the Stump of Dworaks', 'right', 'Forest/StumpOfDworaks', 10),
                 ('Go left, to the Moonshine lake', 'left', 'Forest/MoonshineLake'),
                 ('To the road', 'top', 'Forest/OakVillageRoad'),
                 ('To the Dark forest', 'bottom', 'Forest/DarkForestEntrance')
@@ -62,7 +62,7 @@ class Data():
                 ('Back to grove', 'bottom', 'Forest/SunnyGrove')
             ],
             'Mobs': {
-                'Chance': 100
+                'Chance': 1
             },
             'Intros': [
                 'Checking some intros',

@@ -11,8 +11,10 @@ pg.init()
 import classes
 import screens
 
+import constants
+
 CAPTION = 'Big Typernatural Project'
-SIZE = (1366, 768)
+SIZE = constants.SIZE
 
 def gameLoop(surface):
     settings = classes.Settings()

@@ -109,77 +109,54 @@ class ProgressBar():
 class Move():
     ALPHA = 90
     A_TITLE_COLOR = (200,200,100) #Activated title
-    TITLE_COLOR = (200,100,100)
+    TITLE_COLOR = (200,100,100) #Not activated title, hardly used yet
     FONT_COLOR = (200,200,200)
     FONT = pg.font.Font('Fonts/rpg.otf', 22)
 
-    def randomWord(self):
-        rand = ['qivjsf',
-                'cuxtp',
-                'ewalg',
-                'dmbnr',
-                'yzkoh']
-        word = random.choice(data.words)
-        for i in range(5):
-            if self.index == i:
-                while word[:1] not in rand[i]:
-                    word = random.choice(data.words)
-                return word
-
-    def __init__(self, text, style, index):
-        self.away = False #If true - moveaway with cool effect
-
-        self.locked_color = 0 #RED-increment
+    def __init__(self, text, style):
+        self.away = False #If true - moveaway with cool effect (when progress >= 1)
         self.locked = False
-        self.allowed = True #In focus, allow printing
+        self.locked_color = 0 #RED-increment for animation of locking
         self.text = text
         self.style = style
-        self.index = index
-        self.rtext = self.randomWord()
-        for i in range(4):
-            self.rtext = self.rtext + ' ' + self.randomWord()
+        #self.rtext = '' #This variable created automatically by screens.py
+        self.width = self.FONT.size(self.text)[0] + 20
 
-        self.biggerx = self.FONT.size(self.text)[0] + 20
-
-        self.RECT = pg.Rect((0, 0, self.biggerx, self.FONT.size(text)[1]))
+        self.RECT = pg.Rect((0, 0, self.width, self.FONT.size(text)[1]))
         self.surface = pg.Surface(self.RECT.size, pg.SRCALPHA, 32)
-        self.rRECT = pg.Rect((0, 0, self.biggerx, self.FONT.size(self.rtext)[1]))
+        self.rRECT = pg.Rect((0, 0, self.width, self.FONT.size(text)[1]))
         self.rsurface = pg.Surface(self.rRECT.size, pg.SRCALPHA, 32)
 
-        self.progressBar = ProgressBar(self.biggerx)
+        self.progressBar = ProgressBar(self.width)
         self.progress = 0
 
     def draw(self, surface, outx):
         if self.style == 'right':
             if self.away == False:
-                self.x = surface.get_width() - self.biggerx - 30
+                self.x = surface.get_width() - self.width - 30
             elif self.x < surface.get_width():
                 self.x += 30
             self.y = surface.get_height() - self.RECT.size[1]*2 - 60
         elif self.style == 'left':
             if self.away == False:
                 self.x = 20
-            elif self.x > -self.biggerx:
+            elif self.x > -self.width:
                 self.x -= 30
             self.y = surface.get_height() - self.RECT.size[1]*2 - 60
         elif self.style == 'top':
-            self.x = surface.get_width() / 2 - self.biggerx / 2
+            self.x = surface.get_width() / 2 - self.width / 2
             if self.away == False:
                 self.y = Message.HEIGHT + 30
             elif self.y > -60:
                 self.y -= 30
         elif self.style == 'bottom':
-            self.x = surface.get_width() / 2 - self.biggerx / 2
+            self.x = surface.get_width() / 2 - self.width / 2
             if self.away == False:
                 self.y = surface.get_height() - self.RECT.size[1]*2 - 30
             elif self.y < surface.get_height():
                 self.y += 30
-        #else:
-        #    self.x = 0
-        #    self.y = 0
         self.progressBar.draw(surface, (self.x,self.y), self.progress)
 
-        self.allowed = True #In focus, allow printing
         self.surface.fill((0,0,0, self.ALPHA))
         self.rsurface.fill((self.locked_color,0,0, self.ALPHA))
         if self.locked and self.locked_color < 70:
@@ -192,28 +169,6 @@ class Move():
         self.rsurface.blit(rtext, (10, 0))
         surface.blit(self.surface, (self.x, self.y))
         surface.blit(self.rsurface, (self.x, self.y + self.RECT.height))
-
-    def events(self, events):
-        if self.allowed:
-            for e in events:
-                if e.type == pg.KEYDOWN:
-                    if e.unicode.isalpha():
-                        if self.rtext.startswith(e.unicode):
-                            self.rtext = self.rtext[1:]
-                            if self.rtext[0] == ' ':
-                                self.rtext = self.rtext[1:] + ' ' + self.randomWord()
-                                self.locked = False
-                                return -1
-                            else:
-                                self.locked = True
-                                return self.index
-                    if e.key == pg.K_ESCAPE:
-                        if self.locked:
-                            while self.rtext[0] != ' ':
-                                self.rtext = self.rtext[1:]
-                            self.rtext = self.rtext[1:] + ' ' + self.randomWord()
-                            self.locked = False
-                            return -1
 
 class Hint():
     ALPHA = 180

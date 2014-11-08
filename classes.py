@@ -30,7 +30,8 @@ class Pers():
     intros = 'init'
 
     #===== Characteristics =====
-    speed = 5 #Speed of movement
+    #Speed of movement [mps, meters per stroke]: but 1 stroke = 1 minute of gametime, so you will benefit by moving faster not only in less-strokes way, but also in less-time-spent way
+    speed = 5
 
     experience = 0
     level = 1
@@ -41,7 +42,7 @@ class Pers():
     #Dynamic characteristics
     hp = maxhp
 
-    #The time (in minutes, +10 per turn)
+    #The time (in minutes)
     time = 0
 
     #Statistics
