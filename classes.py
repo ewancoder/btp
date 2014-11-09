@@ -34,10 +34,11 @@ class Pers():
     speed = 5
 
     experience = 0
+    gold = 0 #Money
     level = 1
     maxhp = 20
     maxhp = 200
-    atk = 30
+    attack = 30
 
     #Dynamic characteristics
     hp = maxhp
@@ -47,6 +48,7 @@ class Pers():
 
     #Statistics
     strokes = 0
+    battleStrokes = 0
 
     #All kind of items, even money
     #Starts with _ -> _number_ where 'number' is number of items
@@ -55,6 +57,10 @@ class Pers():
         '_2_PocketKnife',
         '_10_Gold'
     ]
+
+    #Temporary for equip slot
+    shield = '0'
+    sword = '0'
 
     def save(self):
         with open('Saves/' + self.name, 'wb') as f:
@@ -70,16 +76,24 @@ class Pers():
 
 class Mob():
     def __init__(self, style = 'default'):
-        if style == 'default':
+        self.maxhp = 100
+        self.attack = 5
+        self.name = 'Mysterious creature'
+        self.speed = 100 #Added to self.act per tick, speed of monster
+        self.experience = 5
+        self.gold = 5
+
+        self.act = 0 #Activity: when self.act = 10000, mob is attacking
+
+        if style == 'Skeleton':
             self.maxhp = 100
-            self.hp = self.maxhp
-            self.atk = 5
-            self.name = 'Mysterious creature'
-        elif style == 'skeleton':
-            self.maxhp = 100
-            self.hp = self.maxhp
-            self.atk = 5
+            self.attack = 10
             self.name = 'Skeleton'
+            self.speed = 100
+            self.experience = 5
+            self.gold = 5
+
+        self.hp = self.maxhp
 
 #class Quest():
 #    def __init__():

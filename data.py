@@ -62,6 +62,7 @@ class Data():
                 ('Back to grove', 'bottom', 'Forest/SunnyGrove')
             ],
             'Mobs': {
+                'Type': 'Skeleton',
                 'Chance': 50
             },
             'Intros': [

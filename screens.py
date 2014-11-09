@@ -144,16 +144,14 @@ class Login():
 class World():
     def __init__(self, surface):
         self.t_counter = 0 #Transition counter (255 -> 0)
-        #self.started = False #Kostyl, if True - works 1 time for long black-intro in game world
         self.away_counter = 0
 
-        #self.data = data.Data()
         self.introIndex = 0
         self.musicOldName = ''
         self.surface = surface
         self.message = interface.Message(surface)
-        self.battleScreen = Battle(surface)
         self.hints = Hints(interface.Message.HEIGHT + 10)
+        self.pershp = interface.ProgressBar(surface.get_width() / 1.3, 8)
 
     def randWord(self):
         unique = False
@@ -273,10 +271,12 @@ class World():
                     elif e.key == pg.K_F12:
                         return
                     elif e.key == pg.K_ESCAPE and self.locked != -1:
-                        while self.moves[self.locked].rtext[0] != ' ':
+                        while self.moves[self.locked].rtext[:1] != ' ':
                             self.moves[self.locked].rtext = self.moves[self.locked].rtext[1:]
                         self.moves[self.locked].rtext = self.moves[self.locked].rtext[1:] + ' ' + self.randWord()
-                        move.locked = False
+                        #NEED TO CHECK IT, MAY RUIN EVERYTHING
+                        self.moves[self.locked].locked = False
+                        #move.locked = False
                         self.locked = -1
                     elif e.unicode.isalpha():
                         for index, move in enumerate(self.moves):
@@ -297,11 +297,10 @@ class World():
                                     self.pers.time += 1
                                     self.pers.strokes += 1 #Need this separately because time will flow regardless of typing, from other actions too
                                     #HERE IS BATTLE CHANCES ENGAGED (EACH TYPO)
-                                    try:
+                                    if 'Mobs' in self.PLACE.keys():
                                         if random.randrange(0,100) < self.PLACE['Mobs']['Chance']:
-                                            self.pers = self.battleScreen.loop(self.pers, self.bg)
-                                    except:
-                                        pass
+                                            self.pers = Battle(self.surface).loop(self.pers, self.bg)
+                                            #IF PERS IS KILLED, MOVE IT TO CAMP (just use update() because pers.hp is 0 already and place is changed within Battle class)
 
                                     if move.rtext[0] == ' ':
                                         move.rtext = move.rtext[1:] + ' ' + self.randWord()
@@ -311,6 +310,7 @@ class World():
                                             move.away = True
                                             self.away_counter = 1
                                             moveLocal = self.PLACE['Moves'][index]
+                                        break
                                     
             if self.away_counter > 0:
                 self.away_counter += 1
@@ -340,138 +340,209 @@ class World():
             if self.away_counter > 0:
                 self.bg.set_alpha(255 - self.away_counter * 20)
             else:
-                self.bg.set_alpha(255-self.t_counter)
+                self.bg.set_alpha(255 - self.t_counter)
             self.surface.blit(self.bg, (x,y))
             self.t_counter -= 20
 
             #DRAW ALL SPRITES
             
             for move in self.moves:
-                move.draw(self.surface, self.x)
+                move.draw(self.surface)
 
             self.message.draw(self.text)
             self.hints.draw(self.surface, settings)
+
+            if self.intro == False:
+                self.pershp.draw(self.surface, (self.surface.get_width() / 2 - self.pershp.width / 2, 5), self.pers.hp / self.pers.maxhp)
 
             pg.display.flip()
 
 class Battle():
     def __init__(self, surface):
         self.surface = surface
+        self.attacks = [
+            interface.Attack('head'),
+            interface.Attack('torso'),
+            interface.Attack('groin'),
+            interface.Attack('legs')
+        ]
+        self.defences = [
+            interface.Defence('head'),
+            interface.Defence('torso'),
+            interface.Defence('groin'),
+            interface.Defence('legs')
+        ]
+
+        self.defence = -1 #Current defence [head, torso, groin, legs] [1, 2, 3, 4]
+        self.attack = -1 #Current attack [1, 2, 3, 4]
+        self.attackX = 5000 #Under screen for sure
+        self.mob_defence_X = 0
+        self.mob_defence = random.randint(1, 4)
+        self.mob_attack = -1
+        self.mob_attack_X = 0
+
+        self.defence_X = 5000
+
+        for j in range(len(self.attacks)):
+            rtext = self.randWord()
+            for i in range(3):
+                rtext += ' ' + self.randWord()
+            self.attacks[j].rtext = rtext
+        for j in range(len(self.defences)):
+            rtext = self.randWord()
+            for i in range(3):
+                rtext += ' ' + self.randWord()
+            self.defences[j].rtext = rtext
+        
+    def randWord(self):
+        unique = False
+        while not unique:
+            unique = True
+            word = ''
+            while len(word) > 10 or len(word) < 6:
+                word = random.choice(data.words)
+            for m in self.attacks:
+                for rword in m.rtext.split():
+                    if word[:1] == rword[:1]:
+                        unique = False
+            for m in self.defences:
+                for rword in m.rtext.split():
+                    if word[:1] == rword[:1]:
+                        unique = False
+        return word
 
     def loop(self, pers, bg):
         #self.bg = pg.transform.scale(pg.image.load('Images/Battle/' + os.path.basename(os.path.dirname(pers.place)) + '.jpg'), SIZE)
         self.bg = bg
-
+        current = next(item for item in d.place if item['Id'] == pers.place)['Mobs']
         clock = pg.time.Clock()
-        mob = classes.Mob()
-        #d = data.Data()
-        d.update(pers)
-        self.started = False
-        prompt = ''
-        words, bwords, speed, notifications = [], [], [], []
-        words.append(random.choice(data.words))
-        bwords.append(interface.Word(self.surface, words[-1]))
-        try:
-            spd = next(item for item in d.place if item['Id'] == pers.place)['Mobs']['Speed']
-        except:
-            spd = 1
-        speed.append(spd)
+        mob = classes.Mob(current['Type'])
 
+        #speed.append(mob.speed)
         self.stats = interface.BattleStats(self.surface, mob)
 
-        def updateWord():
-            if words[self.index].startswith(e.unicode):
-                words[self.index] = words[self.index][1:]
-                if words[self.index] == '':
-                    persHit = random.randint(int((pers.atk - pers.atk / 3) * 1000), int((pers.atk + pers.atk / 3) * 1000)) / 1000
-                    persHit *= self.length / 10
-                    mob.hp -= persHit
-                    #UPDATE STATE OF BATTLE (hit monster + animate it)
-                    bwords[self.index].word = words[self.index]
-                    #go to next word
-                    self.started = False
-                    #It is the condition lol :D
-                    #words[self.index] = ''
-                    notifications.append(interface.Notify('{:.2f}'.format(persHit), bwords[self.index].x, bwords[self.index].y))
-                    self.index = None
-                else:
-                    bwords[self.index].word = words[self.index]
-        
-        addword = pg.USEREVENT+1
-        pg.time.set_timer(addword, 1000)
-        self.index = None
+        #CREATE SHIELD
+        self.shield = pg.transform.scale(pg.image.load('Images/Shields/' + pers.shield + '.png'), (100,100))
+        self.mob_shield = pg.transform.scale(pg.image.load('Images/Shields/0.png'), (100,100))
+        #CREATE SWORD
+        self.sword = pg.transform.scale(pg.image.load('Images/Swords/' + pers.sword + '.png'), (100,100))
+        self.mob_sword = pg.transform.flip(pg.transform.scale(pg.image.load('Images/Swords/' + pers.sword + '.png'), (100,100)), True, False)
 
-        mob.hp = mob.maxhp
+        self.locked = [-1, -1] #At start, there's none locked attacks
+        self.atkdef = [self.attacks, self.defences]
+
         while mob.hp > 0 and pers.hp > 0:
             clock.tick(30)
+
+            #Calculate MOB AI
+            mob.act += mob.speed
+            if mob.act >= constants.MOB_ACT:
+                mob.act = 0
+                self.mob_attack = random.randint(1,4)
+                self.mob_attack_X = self.surface.get_width() / 2 - self.mob_sword.get_width() / 2 + 100 #Prepare to swing a sword with mob's hand
+                if self.mob_attack != self.defence:
+                    self.stats.Red = 200 #Flash player
+                    pers.hp -= random.randrange(int(mob.attack * constants.PRE / constants.RANDOMIZER), int(mob.attack * constants.PRE * constants.RANDOMIZER)) / constants.PRE
+                    #Clean pers shield - DO NOT CLEAR IT IF NOT CRUSHED
+                    #self.defence = -1
+                else:
+                    #self.defence_X = self.surface.get_width() / 2 - self.shield.get_width() / 2 - 100
+                    temp_defence = self.defence #For shield bouncing
+                    self.defence = -1
+                    self.stats.Blue = 200 #Flash shield
 
             events = pg.event.get()
             for e in events:
                 if e.type == pg.QUIT:
                     quit()
                 if e.type == pg.KEYDOWN:
-                    if e.unicode.isalpha():
-                        if not self.started:
-                            for ind, word in enumerate(words):
-                                if word.startswith(e.unicode):
-                                    self.index = ind
-                                    break
-                            if self.index != None:
-                                if bwords[self.index].word.startswith(e.unicode):
-                                    bwords[self.index].highlight()
-                                    self.started = True
-                                    self.length = len(words[self.index])
-                                    updateWord()
-                        else:
-                            updateWord()
-                if e.type == addword:
-                    #Horrible piece of shit
-                    temp = 0
-                    while True:
-                        temp += 1
-                        go = True
-                        newWord = random.choice(data.words)
-                        for word in words:
-                            if word.startswith(newWord[:1]):
-                                go = False
-                        if go or temp == 100:
-                            temp = 0
-                            break
-                    words.append(newWord)
-                    bwords.append(interface.Word(self.surface, words[-1]))
-                    speed.append(spd)
+                    if e.key == pg.K_ESCAPE:
+                        for i in range(2):
+                            if self.locked[i] != -1:
+                                while self.atkdef[i][self.locked[i]].rtext[:1] != ' ':
+                                    self.atkdef[i][self.locked[i]].rtext = self.atkdef[i][self.locked[i]].rtext[1:]
+                                self.atkdef[i][self.locked[i]].rtext = self.atkdef[i][self.locked[i]].rtext[1:] + ' ' + self.randWord()
+                                self.atkdef[i][self.locked[i]].locked = False
+                                self.locked[i] = -1
+                    elif e.unicode.isalpha():
+                        for i in range(2):
+                            for index, attack in enumerate(self.atkdef[i]):
+                                if self.locked[i] == -1 or self.locked[i] == index:
+                                    if self.locked[i-1] == -1:
+                                        if attack.rtext.startswith(e.unicode):
+                                            attack.rtext = attack.rtext[1:]
+                                            attack.locked = True
+                                            self.locked[i] = index
+                                            pers.battleStrokes += 1 #statistics :)
 
-            self.surface.fill(0)
-            self.surface.blit(self.bg, (0,0))
+                                            if attack.rtext[0] == ' ':
+                                                attack.rtext = attack.rtext[1:] + ' ' + self.randWord()
+                                                attack.locked = False
+                                                self.locked[i] = -1
+
+                                                if i == 0:
+                                                    #ATTACK THE MOB
+                                                    self.attack = index + 1
+                                                    self.attackX = self.surface.get_width() / 2 - self.sword.get_width() / 2 - 100 #Prepare to swing a sword
+                                                    if self.mob_defence != self.attack:
+                                                        #Somehow it cannot accept list like stats.red[i]
+                                                        self.stats.mobRed = 200 #Flash red
+                                                        mob.hp -= random.randrange(int(pers.attack * constants.PRE / constants.RANDOMIZER), int(pers.attack * constants.PRE * constants.RANDOMIZER)) / constants.PRE
+                                                        #Renew mob shield
+                                                        self.mob_defence = random.randint(1, 4)
+                                                    else:
+                                                        #Renew mob shield
+                                                        self.mob_defence_X = self.surface.get_width() / 2 - self.mob_shield.get_width() / 2 + 100 #Prepare to defend the monster
+                                                        temp_mob_defence = self.mob_defence
+                                                        self.mob_defence = random.randint(1, 4)
+                                                        #IF PERS HAS SHIELDBREAKING - THIS IS THE TIME TO BREAK SHIELD
+                                                        self.stats.mobBlue = 200 #Flash shield
+                                                else:
+                                                    #DEFEND THE PLAYER
+                                                    self.defence = index + 1 #Set this to [1, 2, 3 or 4] correspondingly to [head, torso, groin, legs]
+
+                                                break
 
             #STATS
             if pers.hp < 1:
                 pers.hp = 0
             if mob.hp < 1:
                 mob.hp = 0
-            self.stats.draw(self.surface, pers, mob)
 
             #NOTIFICATIONS
-            for n in notifications:
-                if n.y > -n.surface.get_size()[1]:
-                    n.draw(self.surface)
-                else:
-                    del n
+#            for n in notifications:
+#                if n.y > -n.surface.get_size()[1]:
+#                    n.draw(self.surface)
+#                else:
+#                    del n
 
-            #WORDS
-            for ind, w in enumerate(bwords):
-                if words[ind] != '':
-                    if w.draw(speed[ind], self.surface) == 'hit':
-                        if self.started == True:
-                            self.index = None
-                            #go to next word
-                            self.started = False
-                            for ww in bwords:
-                                ww.unhighlight()
-                        words[ind] = ''
-                        mobHit = random.randint(int((mob.atk - mob.atk / 3) * 1000), int((mob.atk + mob.atk / 3) * 1000)) / 1000
-                        pers.hp -= 10 * mobHit
-                        notifications.append(interface.Notify('{:.2f} [HH]'.format(mobHit + 10), bwords[ind].x, bwords[ind].y - 50, 'red'))
+            self.surface.fill(0)
+            self.surface.blit(self.bg, (0,0))
+            self.stats.draw(self.surface, pers, mob)
+
+            #Draw shield
+            if self.defence != -1:
+                self.surface.blit(self.shield, (self.surface.get_width() / 2 - self.shield.get_width() / 2, self.surface.get_height() / 5 * self.defence))
+
+            if self.attack != -1 and self.attackX < self.surface.get_width()/2 + 100:
+                self.surface.blit(self.sword, (self.attackX, self.surface.get_height() / 5 * self.attack))
+                self.attackX += 30
+                if self.mob_defence_X > self.surface.get_width() / 2 - 100:
+                    self.surface.blit(self.mob_shield, (self.mob_defence_X, self.surface.get_height() / 5 * temp_mob_defence))
+                    self.mob_defence_X -= 30
+
+            if self.mob_attack != -1 and self.mob_attack_X > self.surface.get_width()/2 - 100:
+                self.surface.blit(self.mob_sword, (self.mob_attack_X, self.surface.get_height() / 5 * self.mob_attack))
+                self.mob_attack_X -= 30
+                if self.defence_X < self.surface.get_width() / 2 + 100:
+                    print(self.defence_X)
+                    self.surface.blit(self.shield, (self.defence_X, self.surface.get_height() / 5 * temp_defence))
+                    self.defence_X += 30
+
+            for attack in self.attacks:
+                attack.draw(self.surface)
+            for defence in self.defences:
+                defence.draw(self.surface)
 
             pg.display.flip()
 
@@ -479,5 +550,11 @@ class Battle():
             pers.hp = pers.maxhp * .2
             pers.experience -= pers.experience / 10
             camp = next(item for item in d.place if item['Id'].startswith(basename(pers.place)))['Id']
+        elif mob.hp == 0:
+            #REWARDS
+            pers.experience += random.randrange(int(mob.experience*constants.PRE / constants.RANDOMIZER), int(mob.experience*constants.PRE * constants.RANDOMIZER)) * constants.RATES / constants.PRE
+            pers.gold += random.randrange(int(mob.gold*constants.PRE / constants.RANDOMIZER), int(mob.gold*constants.PRE * constants.RANDOMIZER)) * constants.RATES / constants.PRE
+
+            #SHOW REWARDS WINDOW HERE, BEFORE RETURNING
 
         return pers
