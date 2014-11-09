@@ -130,6 +130,9 @@ class Move():
         self.progressBar = ProgressBar(self.width)
         self.progress = 0
 
+    def drawProgressBar(self, surface, xy, progress):
+        self.progressBar.draw(surface, xy, progress)
+
     def draw(self, surface, outx):
         if self.style == 'right':
             if self.away == False:
@@ -155,7 +158,7 @@ class Move():
                 self.y = surface.get_height() - self.RECT.size[1]*2 - 30
             elif self.y < surface.get_height():
                 self.y += 30
-        self.progressBar.draw(surface, (self.x,self.y), self.progress)
+        self.drawProgressBar(surface, (self.x,self.y), self.progress)
 
         self.surface.fill((0,0,0, self.ALPHA))
         self.rsurface.fill((self.locked_color,0,0, self.ALPHA))
@@ -169,6 +172,10 @@ class Move():
         self.rsurface.blit(rtext, (10, 0))
         surface.blit(self.surface, (self.x, self.y))
         surface.blit(self.rsurface, (self.x, self.y + self.RECT.height))
+
+class MoveAttack(Move):
+     def drawProgressBar(self, surface, xy, progress):
+         pass #MoveAttack is without progressbar
 
 class Hint():
     ALPHA = 180

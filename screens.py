@@ -10,6 +10,7 @@ import interface
 import constants
 
 SIZE = constants.BG_SIZE
+d = data.Data()
 
 class Hints():
     def __init__(self, offset=0):
@@ -146,7 +147,7 @@ class World():
         #self.started = False #Kostyl, if True - works 1 time for long black-intro in game world
         self.away_counter = 0
 
-        self.data = data.Data()
+        #self.data = data.Data()
         self.introIndex = 0
         self.musicOldName = ''
         self.surface = surface
@@ -172,7 +173,8 @@ class World():
         unique = False
         #self.pers = pers
         #self.time = 0
-        self.data.update(self.pers)
+        #self.data.update(self.pers)
+        d.update(self.pers)
 
         try:
             self.oldbg = self.bg
@@ -182,7 +184,8 @@ class World():
 
         #Outside of if-loop
         place = self.pers.place
-        self.PLACE = next(item for item in self.data.place if item['Id'] == place)
+        #self.PLACE = next(item for item in self.data.place if item['Id'] == place)
+        self.PLACE = next(item for item in d.place if item['Id'] == place)
 
         if 'Intros' in self.PLACE.keys() and self.pers.place not in self.pers.intros:
             self.intro = True
@@ -219,9 +222,9 @@ class World():
             #except:
             #    pass
 
+        music = pg.mixer.Sound('Music/' + musicName + '.ogg')
         if self.musicOldName != musicName:
             self.musicOldName = musicName
-            music = pg.mixer.Sound('Music/' + musicName + '.ogg')
             if pg.mixer.get_busy():
                 pg.mixer.stop()
             music.play()
@@ -361,7 +364,7 @@ class Battle():
 
         clock = pg.time.Clock()
         mob = classes.Mob()
-        d = data.Data()
+        #d = data.Data()
         d.update(pers)
         self.started = False
         prompt = ''

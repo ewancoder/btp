@@ -69,15 +69,17 @@ class Pers():
         return self
 
 class Mob():
-    def __init__(self, maxhp = 200, atk = 1):
-        self.maxhp = maxhp
-        self.hp = maxhp
-        self.atk = atk
-        self.name = 'Mysterious creature'
-
-#class Skeleton(Mob):
-#    def __init(self):
-#        self.name = 'Skeleton'
+    def __init__(self, style = 'default'):
+        if style == 'default':
+            self.maxhp = 100
+            self.hp = self.maxhp
+            self.atk = 5
+            self.name = 'Mysterious creature'
+        elif style == 'skeleton':
+            self.maxhp = 100
+            self.hp = self.maxhp
+            self.atk = 5
+            self.name = 'Skeleton'
 
 #class Quest():
 #    def __init__():

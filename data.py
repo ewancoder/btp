@@ -62,7 +62,7 @@ class Data():
                 ('Back to grove', 'bottom', 'Forest/SunnyGrove')
             ],
             'Mobs': {
-                'Chance': 1
+                'Chance': 50
             },
             'Intros': [
                 'Checking some intros',
