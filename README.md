@@ -29,3 +29,8 @@ Other branches:
 
 * **req** - old abandoned branch for some dirty 'req' function or somewhat, I forgot already;
 * **refactoring** - branch for **refactoring**, abandoned now but maybe I'll be back on there someday.
+
+Required files
+--------------
+
+For those who wishes to try it out, you will need Music/Images folders filled with content present here: https://mega.co.nz/#F!w0thmRwZ!UHbsUsbXMZhdDdfSitc9wA
